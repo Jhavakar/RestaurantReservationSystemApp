@@ -20,9 +20,6 @@ namespace RestaurantBackend.Models
 
         public bool IsAvailable { get; set; } // To indicate if the table is currently available for booking
 
-        [Required]
-        public string? LocationDescription { get; set; } // Description of the table's location within the restaurant
-
         // Navigation properties
         public virtual ICollection<Reservation> Reservations { get; set; }
     }

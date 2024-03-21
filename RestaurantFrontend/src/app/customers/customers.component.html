@@ -1,0 +1,21 @@
+<form [formGroup]="customerForm" (ngSubmit)="onSubmit()">
+  <div>
+    <label for="firstName">First Name:</label>
+    <input id="firstName" formControlName="firstName" type="text" placeholder="First Name">
+  </div>
+  <div>
+    <label for="lastName">Last Name:</label>
+    <input id="lastName" formControlName="lastName" type="text" placeholder="Last Name">
+  </div>
+  <div>
+    <label for="emailAddress">Email Address:</label>
+    <input id="emailAddress" formControlName="emailAddress" type="email" placeholder="Email Address">
+  </div>
+  <div>
+    <label for="phoneNo">Phone Number (optional):</label>
+    <input id="phoneNo" formControlName="phoneNo" type="text" placeholder="Phone Number">
+  </div>
+  <!-- Add other inputs for additional form controls -->
+
+  <button type="submit">Add Customer</button>
+</form>

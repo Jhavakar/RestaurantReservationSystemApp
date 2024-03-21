@@ -2,6 +2,7 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
@@ -13,98 +14,86 @@ using RestaurantBackend.Models;
 using RestaurantBackend.Services;
 using RestaurantBackend.Utility;
 using RestaurantBackend.ViewModels;
-using System.Threading.Tasks;
 
 namespace RestaurantBackend.Controllers
 {
-    [ApiController]
     [Route("api/[controller]")]
-    [EnableCors("MyPolicy")]
+    [ApiController]
     public class CustomerController : ControllerBase
     {
         private readonly ICustomerService _customerService;
         private readonly IMapper _mapper;
-        private readonly AppSettings _appSettings;
         private readonly ILogger<CustomerController> _logger;
 
-        public CustomerController(
-            ICustomerService customerService,
-            IMapper mapper,
-            IOptions<AppSettings> appSettings,
-            ILogger<CustomerController> logger)
+        public CustomerController(ICustomerService customerService, IMapper mapper, ILogger<CustomerController> logger)
         {
-            _customerService = customerService ?? throw new ArgumentNullException(nameof(customerService));
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _appSettings = appSettings.Value ?? throw new ArgumentNullException(nameof(appSettings));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _customerService = customerService;
+            _mapper = mapper;
+            _logger = logger;
         }
 
-        [AllowAnonymous]
-        [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] CustomerVM model)
+        // POST: api/Customer
+        [HttpPost]
+        public async Task<ActionResult<CustomerVM>> CreateCustomer([FromBody] CustomerVM customerVM)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            var customer = _mapper.Map<Customer>(customerVM); // Map from CustomerVM to Customer for creation
+            var newCustomerVM = await _customerService.AddCustomerAsync(customer); // Service expects Customer
+            return CreatedAtAction(nameof(GetCustomer), new { id = newCustomerVM.CustomerId }, newCustomerVM);
+        }
+
+        // GET: api/Customer/{id}
+        [HttpGet("{id}")]
+        public async Task<ActionResult<CustomerVM>> GetCustomer(int id)
+        {
             try
             {
-                await _customerService.AddCustomer(model);
-                return Ok("Registration successful");
-            }
-            catch (ApplicationException ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-        }
+                var customer = await _customerService.GetCustomerByIdAsync(id);
 
-        [HttpPost("authenticate")]
-        public async Task<IActionResult> Authenticate([FromBody] CustomerVM model)
-        {
-            var customer = await _customerService.Authenticate(model.EmailAddress, model.Password);
-            if (customer == null) return BadRequest(new { message = "Email or password is incorrect" });
-
-            var tokenString = GenerateJwtToken(customer);
-            return Ok(new
-            {
-                Id = customer.CustomerId,
-                EmailAddress = customer.EmailAddress,
-                FirstName = customer.FirstName,
-                LastName = customer.LastName,
-                Token = tokenString
-            });
-        }
-
-        private string GenerateJwtToken(Customer customer)
-        {
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_appSettings.Secret);
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(new Claim[] 
+                if (customer == null)
                 {
-                    new Claim(ClaimTypes.Name, customer.CustomerId.ToString())
-                }),
-                Expires = DateTime.UtcNow.AddDays(7),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-            };
+                    _logger.LogWarning($"Customer with ID {id} not found.");
+                    return NotFound();
+                }
 
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            return tokenHandler.WriteToken(token);
+                return _mapper.Map<CustomerVM>(customer);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"An error occurred while retrieving customer with ID {id}.");
+                throw;
+            }
         }
 
-        [HttpGet("reservations/{customerId}")]
-        public async Task<IActionResult> GetCustomerReservations(int customerId)
+
+        // GET: api/Customer
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<CustomerVM>>> GetAllCustomers()
         {
-            try
-            {
-                var reservations = await _customerService.GetCustomerReservationsAsync(customerId);
-                return Ok(reservations);
-            }
-            catch (ApplicationException ex)
-            {
-                _logger.LogError(ex, "Failed to retrieve reservations for customer ID: {CustomerId}", customerId);
-                return BadRequest(new { message = ex.Message });
-            }
+            var customers = await _customerService.GetAllCustomersAsync();
+            return _mapper.Map<List<CustomerVM>>(customers);
         }
 
-        // Consider adding more methods here as necessary, like updating customer details or password.
+        // PUT: api/Customer/{id}
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateCustomer(int id, [FromBody] CustomerVM customerVM)
+        {
+            if (id != customerVM.CustomerId)
+            {
+                return BadRequest();
+            }
+
+            var customer = _mapper.Map<Customer>(customerVM); // Map from CustomerVM to Customer for update
+            var updatedCustomerVM = await _customerService.UpdateCustomerAsync(customer); // Service expects Customer
+            if (updatedCustomerVM == null) return NotFound();
+
+            return NoContent(); // Alternatively, return the updated CustomerVM if that's your API design
+        }
+        // DELETE: api/Customer/{id}
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteCustomer(int id)
+        {
+            await _customerService.DeleteCustomerAsync(id);
+            return NoContent();
+        }
     }
 }

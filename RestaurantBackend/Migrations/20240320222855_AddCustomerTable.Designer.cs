@@ -12,8 +12,8 @@ using RestaurantBackend.Data;
 namespace RestaurantBackend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240319101658_AddReservationEndTime")]
-    partial class AddReservationEndTime
+    [Migration("20240320222855_AddCustomerTable")]
+    partial class AddCustomerTable
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -172,10 +172,6 @@ namespace RestaurantBackend.Migrations
 
                     b.Property<bool>("IsAvailable")
                         .HasColumnType("bit");
-
-                    b.Property<string>("LocationDescription")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("TableNumber")
                         .IsRequired()

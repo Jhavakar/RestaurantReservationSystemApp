@@ -149,6 +149,7 @@
 /Users/Java/RestaurantReservationSystemApp/RestaurantBackend/obj/Debug/net8.0/RestaurantBackend.csproj.CoreCompileInputs.cache
 /Users/Java/RestaurantReservationSystemApp/RestaurantBackend/obj/Debug/net8.0/RestaurantBackend.MvcApplicationPartsAssemblyInfo.cs
 /Users/Java/RestaurantReservationSystemApp/RestaurantBackend/obj/Debug/net8.0/RestaurantBackend.MvcApplicationPartsAssemblyInfo.cache
+/Users/Java/RestaurantReservationSystemApp/RestaurantBackend/obj/Debug/net8.0/RestaurantBackend.sourcelink.json
 /Users/Java/RestaurantReservationSystemApp/RestaurantBackend/obj/Debug/net8.0/staticwebassets.build.json
 /Users/Java/RestaurantReservationSystemApp/RestaurantBackend/obj/Debug/net8.0/staticwebassets.development.json
 /Users/Java/RestaurantReservationSystemApp/RestaurantBackend/obj/Debug/net8.0/staticwebassets/msbuild.RestaurantBackend.Microsoft.AspNetCore.StaticWebAssets.props

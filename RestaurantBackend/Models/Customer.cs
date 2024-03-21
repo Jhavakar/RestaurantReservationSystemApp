@@ -26,10 +26,10 @@ namespace RestaurantBackend.Models
         [Phone]
         public string PhoneNo { get; set; }  = string.Empty;
 
-        public byte[] PasswordHash { get; set; }
-        public byte[] PasswordSalt { get; set; }
+        // public byte[] PasswordHash { get; set; }
+        // public byte[] PasswordSalt { get; set; }
 
-        // Navigation properties
-        public virtual ICollection<Reservation> Reservations { get; set; } = new HashSet<Reservation>();
+        // // Navigation properties
+        // public virtual ICollection<Reservation> Reservations { get; set; } = new HashSet<Reservation>();
     }
 }

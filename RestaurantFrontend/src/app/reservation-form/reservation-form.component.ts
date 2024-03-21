@@ -1,43 +1,37 @@
-import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Component } from '@angular/core';
+import { FormGroup, FormBuilder, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { ReservationService } from '../services/reservation.service'; // Adjust path as needed
 
 @Component({
   selector: 'app-reservation-form',
-  standalone: true,
+  standalone: true, 
   templateUrl: './reservation-form.component.html',
-  styleUrls: ['./reservation-form.component.css']
+  styleUrls: ['./reservation-form.component.css'],
+  imports: [
+    ReactiveFormsModule, // Include ReactiveFormsModule, FormsModule, or any other dependencies
+    // other modules this component depends on
+  ],
 })
-export class ReservationFormComponent implements OnInit {
+export class ReservationFormComponent {
   reservationForm: FormGroup;
-  timeSlots: string[] = [];
 
-  constructor(private fb: FormBuilder) {
+  constructor(private fb: FormBuilder, private reservationService: ReservationService) {
     this.reservationForm = this.fb.group({
-      reservationDate: ['', [Validators.required]],
-      numberOfGuests: ['', [Validators.required, Validators.min(1)]],
-      selectedTimeSlot: ['', [Validators.required]]
+      // form controls
     });
   }
 
-  ngOnInit(): void {
-    this.generateTimeSlots();
-  }
-
-  generateTimeSlots() {
-    // Assuming the restaurant opens at 12 PM and last reservation is at 11 PM
-    const openingTime = 12; // 12 PM
-    const closingTime = 23; // 11 PM
-
-    for (let hour = openingTime; hour <= closingTime; hour++) {
-      const time = hour > 12 ? `${hour - 12}:00 PM` : `${hour}:00 PM`;
-      this.timeSlots.push(time);
-    }
-  }
-
-  submit() {
+  onSubmit() {
     if (this.reservationForm.valid) {
-      console.log(this.reservationForm.value);
-      // Handle the form submission, e.g., send data to a backend
+      this.reservationService.createReservation(this.reservationForm.value).subscribe({
+        next: (reservation) => {
+          console.log('Reservation created', reservation);
+          // handle response
+        },
+        error: (error) => {
+          console.error('There was an error!', error);
+        }
+      });
     }
   }
 }

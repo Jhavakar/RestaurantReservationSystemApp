@@ -170,10 +170,6 @@ namespace RestaurantBackend.Migrations
                     b.Property<bool>("IsAvailable")
                         .HasColumnType("bit");
 
-                    b.Property<string>("LocationDescription")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("TableNumber")
                         .IsRequired()
                         .HasMaxLength(100)

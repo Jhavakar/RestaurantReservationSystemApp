@@ -1,13 +1,17 @@
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { ReservationFormComponent } from './reservation-form/reservation-form.component'
+import { RouterModule } from '@angular/router';
+import { HttpClientModule } from '@angular/common/http';
 
 @Component({
   selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css'],
   standalone: true,
-  styleUrl: './app.component.css',
-  template: `<app-reservation-form></app-reservation-form>`,
-  imports: [ReservationFormComponent],
+  imports: [
+    RouterModule, 
+    HttpClientModule,
+    // Import other standalone components or modules as needed
+  ],
 })
 export class AppComponent {
   title = 'RestaurantFrontend';
