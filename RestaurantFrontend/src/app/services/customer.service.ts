@@ -1,30 +1,38 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Customer } from '../models/customer.model';
+import { Customer } from '../models/customer.model'; // Make sure this path is correct
 
 @Injectable({
   providedIn: 'root'
 })
 export class CustomerService {
+  private apiUrl = 'http://localhost:5068/api/customer'; // Note the use of 'customer' to match your ASP.NET Core route
 
-  private apiUrl = 'http://localhost:5068/api/customer';
+  constructor(private http: HttpClient) { }
 
-  constructor(private http: HttpClient) {}
-
-  // getCustomers(): Observable<Customer[]> {
-  //   return this.http.get<Customer[]>(this.apiUrl);
-  // }
-
-  register(customer: Customer): Observable<any> {
-    return this.http.post(`${this.apiUrl}/register`, customer);
+  // Method to create a new customer
+  addCustomer(customer: Customer): Observable<Customer> {
+    return this.http.post<Customer>(this.apiUrl, customer);
   }
 
-  // updateCustomer(customerId: number, customer: Customer): Observable<Customer> {
-  //   return this.http.put<Customer>(`${this.apiUrl}/${customerId}`, customer);
-  // }
+  // Method to retrieve all customers
+  getAllCustomers(): Observable<Customer[]> {
+    return this.http.get<Customer[]>(this.apiUrl);
+  }
 
-  // deleteCustomer(customerId: number): Observable<void> {
-  //   return this.http.delete<void>(`${this.apiUrl}/${customerId}`);
-  // }
+  // Method to retrieve a single customer by ID
+  getCustomerById(customerId: number): Observable<Customer> {
+    return this.http.get<Customer>(`${this.apiUrl}/${customerId}`);
+  }
+
+  // Method to update a customer
+  updateCustomer(customerId: number, customer: Customer): Observable<Customer> {
+    return this.http.put<Customer>(`${this.apiUrl}/${customerId}`, customer);
+  }
+
+  // Method to delete a customer
+  deleteCustomer(customerId: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${customerId}`);
+  }
 }

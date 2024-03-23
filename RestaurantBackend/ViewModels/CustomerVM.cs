@@ -3,17 +3,17 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 public class CustomerVM
 {
-    public int CustomerId { get; set; }
+    public int? CustomerId { get; set; } // Make it nullable for creation
 
     [Required, MaxLength(50)]
-    public string FirstName { get; set; } = string.Empty;
+    public string FirstName { get; set; }
 
     [Required, MaxLength(50)]
-    public string LastName { get; set; } = string.Empty;
+    public string LastName { get; set; }
 
     [Required, EmailAddress]
-    public string EmailAddress { get; set; } = string.Empty;
+    public string EmailAddress { get; set; }
 
     [Phone]
-    public string PhoneNo { get; set; } = string.Empty;
+    public string PhoneNo { get; set; }
 }

@@ -36,9 +36,25 @@ namespace RestaurantBackend.Controllers
         [HttpPost]
         public async Task<ActionResult<CustomerVM>> CreateCustomer([FromBody] CustomerVM customerVM)
         {
-            var customer = _mapper.Map<Customer>(customerVM); // Map from CustomerVM to Customer for creation
-            var newCustomerVM = await _customerService.AddCustomerAsync(customer); // Service expects Customer
-            return CreatedAtAction(nameof(GetCustomer), new { id = newCustomerVM.CustomerId }, newCustomerVM);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState); // Correct variable reference
+            }
+
+            try
+            {
+                var customer = _mapper.Map<Customer>(customerVM); // Map to your entity model
+                var newCustomer = await _customerService.AddCustomerAsync(customer); // Use correct method name and await its result
+                var newCustomerVM = _mapper.Map<CustomerVM>(newCustomer); // Optionally map back to VM if needed
+
+                // Return a reference to the created entity
+                return CreatedAtAction(nameof(GetCustomer), new { id = newCustomerVM.CustomerId }, newCustomerVM);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error occurred during registration.");
+                return StatusCode(500, "An unexpected error occurred. Please try again later.");
+            }
         }
 
         // GET: api/Customer/{id}
@@ -79,15 +95,32 @@ namespace RestaurantBackend.Controllers
         {
             if (id != customerVM.CustomerId)
             {
-                return BadRequest();
+                return BadRequest("ID mismatch");
             }
 
-            var customer = _mapper.Map<Customer>(customerVM); // Map from CustomerVM to Customer for update
-            var updatedCustomerVM = await _customerService.UpdateCustomerAsync(customer); // Service expects Customer
-            if (updatedCustomerVM == null) return NotFound();
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
-            return NoContent(); // Alternatively, return the updated CustomerVM if that's your API design
+            var existingCustomer = await _customerService.GetCustomerByIdAsync(id);
+            if (existingCustomer == null)
+            {
+                return NotFound($"Customer with ID {id} not found.");
+            }
+
+            // If the customer exists, map the updated fields from customerVM to the existing customer
+            _mapper.Map(customerVM, existingCustomer);
+
+            // Update the customer using the service
+            var updatedCustomer = await _customerService.UpdateCustomerAsync(existingCustomer);
+
+            // Optionally, map the updated customer back to a CustomerVM to return to the client
+            var updatedCustomerVM = _mapper.Map<CustomerVM>(updatedCustomer);
+
+            return Ok(updatedCustomerVM); // Or return NoContent() if you prefer not to return the updated entity
         }
+
         // DELETE: api/Customer/{id}
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCustomer(int id)

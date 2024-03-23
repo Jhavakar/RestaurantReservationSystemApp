@@ -9,7 +9,6 @@ namespace RestaurantBackend.Utility
         public AutoMapperProfile()
         {
             CreateMap<Customer, CustomerVM>().ReverseMap();
-            CreateMap<CustomerVM, Customer>().ReverseMap(); 
         }
     }
 }
