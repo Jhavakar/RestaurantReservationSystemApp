@@ -14,10 +14,10 @@ namespace RestaurantBackend.Services
 {
     public interface ICustomerService
     {
-        Task<CustomerVM> AddCustomerAsync(Customer customer); // Use Customer for adding
-        Task<CustomerVM> GetCustomerByIdAsync(int customerId); // Retrieval uses CustomerVM
-        Task<List<CustomerVM>> GetAllCustomersAsync(); // Retrieval uses CustomerVM
-        Task<CustomerVM> UpdateCustomerAsync(Customer customer); // Use Customer for updating
+        Task<Customer> AddCustomerAsync(Customer customer);
+        Task<Customer> GetCustomerByIdAsync(int customerId);
+        Task<IEnumerable<Customer>> GetAllCustomersAsync();
+        Task<Customer> UpdateCustomerAsync(Customer customer);
         Task DeleteCustomerAsync(int customerId);
     }
 
