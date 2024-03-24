@@ -36,7 +36,7 @@ public class TableController : ControllerBase
         return Ok(table);
     }
 
-    // GET: api/Table/availability
+    // GET: api/Table/available
     [HttpGet("available")]
     public async Task<IActionResult> GetAvailableTables([FromQuery] DateTime date, [FromQuery] TimeSpan duration, [FromQuery] int numberOfGuests)
     {
@@ -44,20 +44,27 @@ public class TableController : ControllerBase
         return Ok(availableTables);
     }
 
-    // POST: api/Table/reserve
-    // Add more details to this endpoint as needed, such as reservation time.
+    // POST: api/Table/reserve/{tableId}
     [HttpPost("reserve/{tableId}")]
-    public async Task<IActionResult> ReserveTable(int tableId, [FromBody] int reservationId)
+    public async Task<IActionResult> ReserveTable(int tableId, [FromBody] Reservation reservationDetails)
     {
-        var success = await _tableService.ReserveTableAsync(tableId, reservationId);
-        if (!success)
+        try
         {
-            return BadRequest("Failed to reserve table.");
+            var reservation = await _tableService.ReserveTableAsync(tableId, reservationDetails);
+            if (reservation != null)
+            {
+                return CreatedAtAction(nameof(GetTableById), new { id = tableId }, reservation);
+            }
+            else
+            {
+                return BadRequest("Failed to reserve table. It may no longer be available.");
+            }
         }
-        return Ok();
+        catch (Exception ex)
+        {
+            // Consider logging the exception details
+            return StatusCode(500, $"Internal server error: {ex.Message}");
+        }
     }
-    
-
-    // Additional endpoints as needed...
 
 }

@@ -57,6 +57,14 @@ namespace RestaurantBackend.Controllers
             }
         }
 
+        // GET: api/Customer
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<CustomerVM>>> GetAllCustomers()
+        {
+            var customers = await _customerService.GetAllCustomersAsync();
+            return _mapper.Map<List<CustomerVM>>(customers);
+        }
+
         // GET: api/Customer/{id}
         [HttpGet("{id}")]
         public async Task<ActionResult<CustomerVM>> GetCustomer(int id)
@@ -78,15 +86,6 @@ namespace RestaurantBackend.Controllers
                 _logger.LogError(ex, $"An error occurred while retrieving customer with ID {id}.");
                 throw;
             }
-        }
-
-
-        // GET: api/Customer
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<CustomerVM>>> GetAllCustomers()
-        {
-            var customers = await _customerService.GetAllCustomersAsync();
-            return _mapper.Map<List<CustomerVM>>(customers);
         }
 
         // PUT: api/Customer/{id}

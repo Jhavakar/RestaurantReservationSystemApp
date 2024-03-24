@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace RestaurantBackend.Services
@@ -18,9 +19,6 @@ namespace RestaurantBackend.Services
         Task<Customer> UpdateCustomerAsync(Customer customer);
         Task DeleteCustomerAsync(int customerId);
     }
-
-
-
 
 
     public class CustomerService : ICustomerService

@@ -25,22 +25,19 @@ namespace RestaurantBackend.Services
 
         public ReservationService(ApplicationDbContext context, ILogger<ReservationService> logger)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _context = context;
+            _logger = logger;
         }
 
         public async Task<Reservation> CreateReservationAsync(Reservation reservation)
         {
-            // Check if the table is available at the requested time
-            bool isAvailable = await IsTableAvailableAsync(reservation.TableId, reservation.ReservationTime, TimeSpan.FromHours(1));
-            if (!isAvailable)
-            {
-                throw new InvalidOperationException("The table is not available for the selected time.");
-            }
+            // Correctly setting ReservationEndTime to 1 hour after ReservationTime
+            reservation.ReservationEndTime = reservation.ReservationTime.AddHours(1);
 
             _context.Reservations.Add(reservation);
             await _context.SaveChangesAsync();
-            return reservation;
+            _logger.LogInformation("Reservation created successfully.");
+            return reservation; // This is correct; no need to redeclare a new Reservation object.
         }
 
         public async Task<Reservation> GetReservationByIdAsync(int reservationId)
@@ -55,8 +52,17 @@ namespace RestaurantBackend.Services
 
         public async Task UpdateReservationAsync(Reservation reservation)
         {
-            _context.Entry(reservation).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
+            var existingReservation = await _context.Reservations.FindAsync(reservation.ReservationId);
+            if (existingReservation != null)
+            {
+                _context.Entry(existingReservation).CurrentValues.SetValues(reservation);
+                await _context.SaveChangesAsync();
+                _logger.LogInformation("Reservation updated: {Id}", reservation.ReservationId);
+            }
+            else
+            {
+                throw new KeyNotFoundException($"Reservation with ID {reservation.ReservationId} not found.");
+            }
         }
 
         public async Task CancelReservationAsync(int reservationId)
@@ -66,18 +72,35 @@ namespace RestaurantBackend.Services
             {
                 _context.Reservations.Remove(reservation);
                 await _context.SaveChangesAsync();
+                _logger.LogInformation("Reservation with ID {ReservationId} deleted.", reservationId);
             }
+            else
+            {
+                _logger.LogWarning("Reservation with ID {ReservationId} not found for deletion.", reservationId);
+        }
         }
 
-        private async Task<bool> IsTableAvailableAsync(int tableId, DateTime requestedTime, TimeSpan duration)
-        {
-            var overlappingReservations = await _context.Reservations
-                .Where(r => r.TableId == tableId &&
-                            ((r.ReservationTime <= requestedTime && r.ReservationEndTime > requestedTime) ||
-                             (requestedTime.Add(duration) > r.ReservationTime && requestedTime.Add(duration) <= r.ReservationEndTime)))
-                .ToListAsync();
+        // private async Task<bool> IsTableAvailableAsync(int tableId, DateTime requestedTime, TimeSpan duration)
+        // {
+        //     var overlappingReservations = await _context.Reservations
+        //         .Where(r => r.TableId == tableId &&
+        //                     ((r.ReservationTime <= requestedTime && r.ReservationEndTime > requestedTime) ||
+        //                      (requestedTime.Add(duration) > r.ReservationTime && requestedTime.Add(duration) <= r.ReservationEndTime)))
+        //         .ToListAsync();
 
-            return !overlappingReservations.Any();
-        }
+        //     return !overlappingReservations.Any();
+        //     }
+
+        // private async Task<bool> IsTableAvailableAsync(int tableId, DateTime requestedTime, TimeSpan duration)
+        // {
+        //     var overlappingReservations = await _context.Reservations
+        //         .Where(r => r.TableId == tableId &&
+        //                     ((r.ReservationTime <= requestedTime && r.ReservationEndTime > requestedTime) ||
+        //                      (requestedTime.Add(duration) > r.ReservationTime && requestedTime.Add(duration) <= r.ReservationEndTime)))
+        //         .ToListAsync();
+
+        //     return !overlappingReservations.Any();
+        // }
+    
     }
 }

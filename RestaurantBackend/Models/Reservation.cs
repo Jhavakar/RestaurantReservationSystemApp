@@ -10,31 +10,26 @@ namespace RestaurantBackend.Models
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; set; }
-
-        [Required]
-        public DateTime ReservationDate { get; set; }
-
+        public int ReservationId { get; set; }
 
         [Required]
         [CustomValidation(typeof(ReservationValidator), nameof(ReservationValidator.ValidateReservationTime))]
         public DateTime ReservationTime { get; set; }
-        public DateTime ReservationEndTime { get; set; } 
-
+        
+        // Automatically calculated to be 1 hour after ReservationTime
+        public DateTime ReservationEndTime { get; set; }
 
         [Required]
-        [MaxLength(100)]
-        public string Title { get; set; }  = string.Empty;
+        public int TableId { get; set; }
 
-        public int TableId { get; set; } 
-        public double Total { get; set; }
+        [Required]
+        public int CustomerId { get; set; }
+
+        [Required]
+        public int NumberOfGuests { get; set; }
 
         // Navigation properties
-        public virtual Payment Payment { get; set; }
         public virtual Table Table { get; set; }
-        public int CustomerId { get; set; }
-        public virtual Customer Customer { get; set; } // Ensure this is correctly set up in EF configuration for FK
-
-        public bool IsActive { get; set; } = true;
+        public virtual Customer Customer { get; set; }
     }
 }

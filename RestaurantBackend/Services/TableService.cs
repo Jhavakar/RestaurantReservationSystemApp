@@ -1,21 +1,20 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using RestaurantBackend.Data;
+using RestaurantBackend.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using RestaurantBackend.Models;
-using RestaurantBackend.Data;
 
 namespace RestaurantBackend.Services {
-    
+
     public interface ITableService
     {
         Task<IEnumerable<Table>> GetAllTablesAsync();
         Task<Table> GetTableByIdAsync(int tableId);
-        // Updated to include the number of guests
         Task<IEnumerable<Table>> GetAvailableTablesAsync(DateTime date, TimeSpan duration, int numberOfGuests);
-        Task<bool> ReserveTableAsync(int tableId, int reservationId);
+        Task<Reservation> ReserveTableAsync(int customerId, DateTime reservationTime, TimeSpan duration, int numberOfGuests);
     }
 
     public class TableService : ITableService
@@ -25,8 +24,8 @@ namespace RestaurantBackend.Services {
 
         public TableService(ApplicationDbContext context, ILogger<TableService> logger)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _context = context;
+            _logger = logger;
         }
 
         public async Task<IEnumerable<Table>> GetAllTablesAsync()
@@ -36,46 +35,47 @@ namespace RestaurantBackend.Services {
 
         public async Task<Table> GetTableByIdAsync(int tableId)
         {
-            var table = await _context.Tables.FindAsync(tableId);
-            if (table == null)
-            {
-                _logger.LogWarning($"Table {tableId} not found");
-                throw new KeyNotFoundException($"Table {tableId} not found");
-            }
-            return table;
+            return await _context.Tables.FindAsync(tableId);
         }
 
-        // Updated method to consider the number of guests
         public async Task<IEnumerable<Table>> GetAvailableTablesAsync(DateTime date, TimeSpan duration, int numberOfGuests)
         {
             var endDateTime = date.Add(duration);
             var reservedTableIds = await _context.Reservations
-                .Where(r => r.ReservationTime >= date && r.ReservationTime < endDateTime)
+                .Where(r => r.ReservationTime >= date && r.ReservationEndTime <= endDateTime)
                 .Select(r => r.TableId)
                 .Distinct()
                 .ToListAsync();
 
-            var availableTables = await _context.Tables
+            return await _context.Tables
                 .Where(t => !reservedTableIds.Contains(t.TableId) && t.Capacity >= numberOfGuests)
                 .ToListAsync();
-
-            
-
-            return availableTables;
         }
 
-        public async Task<bool> ReserveTableAsync(int tableId, int reservationId)
+        public async Task<Reservation> ReserveTableAsync(int customerId, DateTime reservationTime, TimeSpan duration, int numberOfGuests)
         {
-            var table = await _context.Tables.FindAsync(tableId);
-            var reservation = await _context.Reservations.FindAsync(reservationId);
-
-            if (table != null && reservation != null)
+            var availableTables = await GetAvailableTablesAsync(reservationTime, duration, numberOfGuests);
+            var table = availableTables.FirstOrDefault();
+            if (table == null)
             {
-                reservation.TableId = tableId;
-                await _context.SaveChangesAsync();
-                return true;
+                _logger.LogWarning("No available tables for the specified time and guest count.");
+                return null;
             }
-            return false;
+
+            var reservation = new Reservation
+            {
+                CustomerId = customerId,
+                TableId = table.TableId,
+                ReservationTime = reservationTime,
+                ReservationEndTime = reservationTime.Add(duration),
+                // Assuming you have fields like NumberOfGuests in your Reservation model
+                NumberOfGuests = numberOfGuests,
+            };
+
+            _context.Reservations.Add(reservation);
+            await _context.SaveChangesAsync();
+
+            return reservation;
         }
     }
 }

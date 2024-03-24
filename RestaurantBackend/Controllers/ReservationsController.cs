@@ -1,14 +1,9 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authorization; 
-using RestaurantBackend.Data;
+using Microsoft.Extensions.Logging;
 using RestaurantBackend.Models;
-using RestaurantBackend.ViewModels;
-using AutoMapper;
-using System;
+using RestaurantBackend.Services;
 using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace RestaurantBackend.Controllers
@@ -18,124 +13,18 @@ namespace RestaurantBackend.Controllers
     [Authorize]
     public class ReservationsController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
-        private readonly IMapper _mapper;
+        private readonly IReservationService _reservationService;
         private readonly ILogger<ReservationsController> _logger;
 
-        public ReservationsController(ApplicationDbContext context, IMapper mapper, ILogger<ReservationsController> logger)
+        public ReservationsController(IReservationService reservationService, ILogger<ReservationsController> logger)
         {
-            _context = context;
-            _mapper = mapper;            
+            _reservationService = reservationService;          
             _logger = logger;
-
-        }
-
-        // GET: api/Reservations
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Reservation>>> GetReservations()
-        {
-            return await _context.Reservations.ToListAsync();
-        }
-
-        // GET: api/Reservations/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Reservation>> GetReservation(int id)
-        {
-            var reservation = await _context.Reservations.FindAsync(id);
-            if (reservation == null)
-            {
-                return NotFound();
-            }
-            return reservation;
         }
 
         // POST: api/Reservations
         [HttpPost]
-        public async Task<ActionResult<Reservation>> PostReservation(Reservation reservation)
-        {
-            _context.Reservations.Add(reservation);
-            await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetReservation), new { id = reservation.Id }, reservation);
-        }
-
-        // PUT: api/Reservations/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutReservation(int id, Reservation reservation)
-        {
-            if (id != reservation.Id)
-            {
-                return BadRequest();
-            }
-            _context.Entry(reservation).State = EntityState.Modified;
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!_context.Reservations.Any(e => e.Id == id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
-        // DELETE: api/Reservations/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteReservation(int id)
-        {
-            var reservation = await _context.Reservations.FindAsync(id);
-            if (reservation == null)
-            {
-                return NotFound();
-            }
-            _context.Reservations.Remove(reservation);
-            await _context.SaveChangesAsync();
-            return NoContent();
-        }
-
-        // GET: api/Reservations/Search/{searchTerm}
-        [HttpGet("Search/{searchTerm}")]
-        public async Task<ActionResult<IEnumerable<Reservation>>> SearchReservations(string searchTerm)
-        {
-            var reservations = await _context.Reservations
-                .Include(r => r.Customer) // Include the Customer entity
-                .Where(r => (r.Customer.FirstName + " " + r.Customer.LastName).Contains(searchTerm))
-                .ToListAsync();
-            return Ok(reservations);
-        }
-
-        // GET: api/Reservations/AvailableSlots/{tableId}
-        [HttpGet("AvailableSlots/{tableId}")]
-        public async Task<ActionResult<IEnumerable<DateTime>>> GetAvailableReservationSlots(int tableId, [FromQuery] DateTime date)
-        {
-            var reservations = await _context.Reservations
-                .Where(r => r.TableId == tableId && r.ReservationTime.Date == date.Date)
-                .Select(r => r.ReservationTime)
-                .ToListAsync();
-
-            // Assuming reservations are for 1 hour each and the restaurant operates from 12:00 to 23:00
-            var slots = new List<DateTime>();
-            for (int hour = 12; hour <= 22; hour++) // Adjust according to your business hours
-            {
-                var potentialSlot = new DateTime(date.Year, date.Month, date.Day, hour, 0, 0);
-                if (!reservations.Contains(potentialSlot))
-                {
-                    slots.Add(potentialSlot);
-                }
-            }
-
-            return Ok(slots);
-        }
-    
-        [HttpPost("Create")]
-        public async Task<IActionResult> CreateReservation([FromBody] ReservationVM reservationVM)
+        public async Task<IActionResult> CreateReservation([FromBody] Reservation reservation)
         {
             if (!ModelState.IsValid)
             {
@@ -144,34 +33,79 @@ namespace RestaurantBackend.Controllers
 
             try
             {
-                var reservation = _mapper.Map<Reservation>(reservationVM);
-                _context.Reservations.Add(reservation);
-                await _context.SaveChangesAsync();
-                return CreatedAtAction(nameof(GetReservation), new { id = reservation.Id }, reservationVM);
+                var createdReservation = await _reservationService.CreateReservationAsync(reservation);
+                return CreatedAtAction(nameof(GetReservationById), new { id = createdReservation.ReservationId }, createdReservation);
             }
-            catch (Exception ex)
+            catch (System.Exception ex)
             {
-                _logger.LogError(ex, "Failed to create reservation");
-                return BadRequest(new { message = ex.Message });
+                _logger.LogError("Unable to create reservation, possible conflicts or validation failure: {ExceptionMessage}", ex.Message);
+                return BadRequest("Unable to create reservation, possible conflicts or validation error.");
             }
         }
 
-        // Your method to get customer's reservations...
-        [HttpGet("my-reservations")]
-        public async Task<IActionResult> GetMyReservations()
+        // GET: api/Reservations
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Reservation>>> GetReservations()
         {
-            if (User.Identity?.Name == null)
+            return Ok(await _reservationService.GetAllReservationsAsync());
+        }
+
+        // GET: api/Reservations/{id}
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetReservationById(int id)
+        {
+            var reservation = await _reservationService.GetReservationByIdAsync(id);
+            if (reservation == null)
             {
-                return Unauthorized("User is not logged in.");
+                _logger.LogWarning("Reservation with ID {Id} not found.", id);
+                return NotFound();
+            }
+            return Ok(reservation);
+        }
+
+        // PUT: api/Reservations/{id}
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateReservation(int id, [FromBody] Reservation reservation)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
             }
 
-            int customerId = int.Parse(User.Identity.Name);
-            var reservations = await _context.Reservations
-                                             .Where(r => r.CustomerId == customerId)
-                                             .ToListAsync();
-            
-            return Ok(reservations);
+            if (id != reservation.ReservationId)
+            {
+                return BadRequest("Mismatched reservation ID.");
+            }
+
+            try
+            {
+                await _reservationService.UpdateReservationAsync(reservation);
+                return NoContent();
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound($"Reservation with ID {id} not found.");
+            }
+            catch (System.Exception ex)
+            {
+                _logger.LogError("Error updating reservation: {ExceptionMessage}", ex.Message);
+                return BadRequest("Error updating reservation.");
+            }
+        }
+
+        // DELETE: api/Reservations/{id}
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteReservation(int id)
+        {
+            try
+            {
+                await _reservationService.CancelReservationAsync(id);
+                return NoContent();
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound($"Reservation with ID {id} not found.");
+            }
         }
     }
-    
 }
