@@ -50,7 +50,16 @@ public class TableController : ControllerBase
     {
         try
         {
-            var reservation = await _tableService.ReserveTableAsync(tableId, reservationDetails);
+            // Assuming reservationDetails includes all necessary info
+            // and you define a fixed duration for your reservations, e.g., 1 hour.
+            TimeSpan duration = TimeSpan.FromHours(1); // Example fixed duration
+
+            var reservation = await _tableService.ReserveTableAsync(
+                reservationDetails.CustomerId, 
+                reservationDetails.ReservationTime, 
+                duration, 
+                reservationDetails.NumberOfGuests);
+
             if (reservation != null)
             {
                 return CreatedAtAction(nameof(GetTableById), new { id = tableId }, reservation);

@@ -17,6 +17,7 @@ namespace RestaurantBackend.Models
         public DateTime ReservationTime { get; set; }
         
         // Automatically calculated to be 1 hour after ReservationTime
+        // No change needed here since the logic remains the same.
         public DateTime ReservationEndTime { get; set; }
 
         [Required]

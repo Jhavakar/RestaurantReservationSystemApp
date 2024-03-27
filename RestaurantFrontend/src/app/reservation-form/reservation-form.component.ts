@@ -1,23 +1,23 @@
 import { Component } from '@angular/core';
-import { FormGroup, FormBuilder, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { ReservationService } from '../services/reservation.service'; // Adjust path as needed
+import { FormGroup, FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
+import { ReservationService } from '../services/reservation.service';
 
 @Component({
   selector: 'app-reservation-form',
   standalone: true, 
   templateUrl: './reservation-form.component.html',
   styleUrls: ['./reservation-form.component.css'],
-  imports: [
-    ReactiveFormsModule, // Include ReactiveFormsModule, FormsModule, or any other dependencies
-    // other modules this component depends on
-  ],
+  imports: [ReactiveFormsModule], 
 })
 export class ReservationFormComponent {
   reservationForm: FormGroup;
 
   constructor(private fb: FormBuilder, private reservationService: ReservationService) {
     this.reservationForm = this.fb.group({
-      // form controls
+      firstName: ['', Validators.required],
+      lastName: ['', Validators.required],
+      reservationTime: ['', Validators.required],
+      numberOfGuests: ['', [Validators.required, Validators.min(1)]],
     });
   }
 
@@ -26,12 +26,12 @@ export class ReservationFormComponent {
       this.reservationService.createReservation(this.reservationForm.value).subscribe({
         next: (reservation) => {
           console.log('Reservation created', reservation);
-          // handle response
+          this.reservationForm.reset();
         },
-        error: (error) => {
-          console.error('There was an error!', error);
-        }
+        error: (error) => console.error('There was an error!', error)
       });
+    } else {
+      console.error('Form is not valid');
     }
   }
 }

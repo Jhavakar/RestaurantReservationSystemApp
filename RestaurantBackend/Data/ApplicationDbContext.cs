@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using RestaurantBackend.Models;
 
@@ -23,19 +24,19 @@ namespace RestaurantBackend.Data
             // optionsBuilder.UseSqlServer("Server=localhost;Database=MyRestaurantDb;User ID=myUsername;Password=myPassword;");
         }
 
-        // protected override void OnModelCreating(ModelBuilder modelBuilder)
-        // {
-        //     base.OnModelCreating(modelBuilder);
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
 
-        //     modelBuilder.Entity<Reservation>()
-            // .HasOne(r => r.Payment) 
-            // .WithOne(p => p.Reservation) 
-            // .HasForeignKey<Payment>(p => p.ReservationId); 
+            modelBuilder.Entity<Reservation>()
+            .HasOne(r => r.Payment) 
+            .WithOne(p => p.Reservation) 
+            .HasForeignKey<Payment>(p => p.ReservationId); 
 
             // Fluent API configurations go here
             // Example: modelBuilder.Entity<Reservation>().HasKey(r => r.ReservationId);
             // Configure relationships, indices, etc.
 
-        // }
+        }
     }
 }

@@ -3,9 +3,10 @@ import { bootstrapApplication } from '@angular/platform-browser';
 import { AppComponent } from './app/app.component';
 import { environment } from './environment/environment';
 import { importProvidersFrom } from '@angular/core';
-import { HttpClientModule } from '@angular/common/http'; // Use HttpClientModule without withFetch unless needed
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
 import { routes } from './app/app.routes';
+import { AuthInterceptor } from './app/interceptor/auth.service';
 
 if (environment.production) {
   enableProdMode();
@@ -13,11 +14,14 @@ if (environment.production) {
 
 bootstrapApplication(AppComponent, {
   providers: [
-    importProvidersFrom([
+    importProvidersFrom(
       HttpClientModule,
-      RouterModule.forRoot(routes), // Centralized routing setup
-    ]),
+      RouterModule.forRoot(routes)
+    ),
+    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
+
     // If you need to use fetch API specifically, uncomment the next line
     // provideHttpClient(withFetch()),
   ],
+  
 }).catch(err => console.error(err));

@@ -1,8 +1,8 @@
-<!-- Example layout with a navigation link to the Customers page -->
-
-  
-  <div>
-    <h1>Welcome to the App!</h1>
-    <router-outlet></router-outlet> <!-- Routed components are displayed here -->
-  </div>
-  
+<div>
+  <h1>Welcome to the App!</h1>
+  <nav>
+    <a routerLink="/customers">Customer Details</a>
+    <a routerLink="/reserve">Make a Reservation</a>
+  </nav>
+  <router-outlet></router-outlet> <!-- Routed components are displayed here -->
+</div>

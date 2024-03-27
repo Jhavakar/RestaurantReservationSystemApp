@@ -29,7 +29,10 @@ export class CustomersComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // this.loadCustomers();
+    this.customerService.getAllCustomers().subscribe({
+      next: (data) => this.customers = data,
+      error: (err) => console.error('Failed to fetch customers', err)
+    });
   }
 
   onSubmit(): void {

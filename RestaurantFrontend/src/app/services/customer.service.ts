@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Customer } from '../models/customer.model'; // Make sure this path is correct
+import { Customer } from '../models/customer.model'; 
 
 @Injectable({
   providedIn: 'root'
 })
+
 export class CustomerService {
   private apiUrl = 'http://localhost:5068/api/customer'; // Note the use of 'customer' to match your ASP.NET Core route
 
