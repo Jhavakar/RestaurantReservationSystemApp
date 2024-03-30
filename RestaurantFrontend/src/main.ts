@@ -6,7 +6,7 @@ import { importProvidersFrom } from '@angular/core';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
 import { routes } from './app/app.routes';
-import { AuthInterceptor } from './app/interceptor/auth.service';
+import { AuthInterceptor } from './app/interceptor/auth.interceptors.service';
 
 if (environment.production) {
   enableProdMode();

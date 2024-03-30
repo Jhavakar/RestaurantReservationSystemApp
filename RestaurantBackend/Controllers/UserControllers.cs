@@ -1,41 +1,49 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using RestaurantBackend.ViewModels;
 
 [ApiController]
 [Route("api/[controller]")]
 public class UsersController : ControllerBase
 {
     private readonly IConfiguration _configuration;
-    // Assuming you're using ASP.NET Core Identity, you'll have UserManager and SignInManager.
-    // If not, replace with your user validation logic.
     private readonly UserManager<IdentityUser> _userManager;
-    private readonly SignInManager<IdentityUser> _signInManager;
 
-    public UsersController(IConfiguration configuration, UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager)
+    public UsersController(IConfiguration configuration, UserManager<IdentityUser> userManager)
     {
         _configuration = configuration;
         _userManager = userManager;
-        _signInManager = signInManager;
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] Login model)
+    public async Task<IActionResult> Login([FromBody] LoginVM loginVM)
     {
-        // Replace with your user validation logic if not using Identity
-        var user = await _userManager.FindByNameAsync(model.Username);
-        if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
+        var user = await _userManager.FindByEmailAsync(loginVM.EmailAddress);
+        if (user != null && await _userManager.CheckPasswordAsync(user, loginVM.Password))
         {
-            // Generate JWT Token
             var token = GenerateJwtToken(user);
-            return Ok(new { token = token });
+
+            // Set the token in an HttpOnly cookie
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Expires = DateTime.Now.AddHours(3),
+                Secure = true, // Enforce HTTPS
+                SameSite = SameSiteMode.Strict // Prevent CSRF attacks
+            };
+            Response.Cookies.Append("auth_token", token, cookieOptions);
+
+            return Ok(new { message = "Login successful" });
         }
-        return Unauthorized();
+        return Unauthorized("Invalid login attempt.");
     }
 
-    private string GenerateJwtToken(IdentityUser user)
+        private string GenerateJwtToken(IdentityUser user)
     {
         var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
@@ -43,23 +51,18 @@ public class UsersController : ControllerBase
         var claims = new[]
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
+            new Claim(JwtRegisteredClaimNames.Email, user.Email),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            // Add more claims if needed
         };
 
-        var token = new JwtSecurityToken(
+        var tokenDescriptor = new JwtSecurityToken(
             issuer: _configuration["Jwt:Issuer"],
             audience: _configuration["Jwt:Audience"],
             claims: claims,
             expires: DateTime.Now.AddHours(3),
             signingCredentials: credentials);
 
-        return new JwtSecurityTokenHandler().WriteToken(token);
+        return new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
     }
-}
 
-public class Login
-{
-    public string Username { get; set; }
-    public string Password { get; set; }
 }

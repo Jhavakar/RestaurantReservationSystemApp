@@ -52,16 +52,23 @@ namespace RestaurantBackend.Services
 
         public async Task UpdateReservationAsync(Reservation reservation)
         {
-            var existingReservation = await _context.Reservations.FindAsync(reservation.ReservationId);
-            if (existingReservation != null)
+            try
             {
+                var existingReservation = await _context.Reservations.FindAsync(reservation.ReservationId);
+                if (existingReservation == null)
+                {
+                    _logger.LogWarning($"Reservation with ID {reservation.ReservationId} not found for update.");
+                    throw new KeyNotFoundException($"Reservation with ID {reservation.ReservationId} not found.");
+                }                
+
                 _context.Entry(existingReservation).CurrentValues.SetValues(reservation);
                 await _context.SaveChangesAsync();
-                _logger.LogInformation("Reservation updated: {Id}", reservation.ReservationId);
+                _logger.LogInformation($"Reservation updated: {reservation}");
             }
-            else
+            catch (Exception ex)
             {
-                throw new KeyNotFoundException($"Reservation with ID {reservation.ReservationId} not found.");
+                _logger.LogError(ex, $"An error occurred while updating reservation with ID {reservation.ReservationId}.");
+                throw; // Re-throwing the exception preserves the stack trace but allows for custom logging
             }
         }
 

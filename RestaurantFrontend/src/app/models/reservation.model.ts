@@ -1,8 +1,8 @@
 // reservation.model.ts
-import { Customer } from '../models/customer.model';
-import { Table } from '../models/table.model';
+import { CustomerModel } from '../models/customer.model';
+import { TableModel } from '../models/table.model';
 
-export interface Reservation {
+export interface ReservationModel {
   reservationTime: Date; 
   numberOfGuests: number;
   customerId?: number; 

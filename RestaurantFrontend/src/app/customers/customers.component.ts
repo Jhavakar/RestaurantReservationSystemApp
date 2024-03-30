@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CustomerService } from '../services/customer.service';
-import { Customer } from '../models/customer.model';
+import { CustomerModel } from '../models/customer.model';
 
 @Component({
   selector: 'app-customers',
@@ -12,7 +12,7 @@ import { Customer } from '../models/customer.model';
 })
 export class CustomersComponent implements OnInit {
   customerForm: FormGroup;
-  customers: Customer[] = []; // Store the list of customers
+  customers: CustomerModel[] = []; // Store the list of customers
   isEdit = false; // Flag to check if form is used for edit
   editCustomerId: number | null = null; // Store the editing customer's ID
 
