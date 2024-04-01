@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 import { CustomerService } from '../services/customer.service';
 import { CustomerModel } from '../models/customer.model';
 
@@ -8,7 +9,7 @@ import { CustomerModel } from '../models/customer.model';
   templateUrl: './customers.component.html',
   styleUrls: ['./customers.component.css'],
   standalone: true,
-  imports: [ReactiveFormsModule]
+  imports: [ReactiveFormsModule, CommonModule]
 })
 export class CustomersComponent implements OnInit {
   customerForm: FormGroup;
@@ -29,10 +30,7 @@ export class CustomersComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.customerService.getAllCustomers().subscribe({
-      next: (data) => this.customers = data,
-      error: (err) => console.error('Failed to fetch customers', err)
-    });
+    this.loadCustomers();
   }
 
   onSubmit(): void {
@@ -88,7 +86,9 @@ export class CustomersComponent implements OnInit {
         console.log(`Customer with ID ${customerId} deleted successfully`);
         this.loadCustomers();
       },
-      error: (error) => console.error('Failed to delete customer', error)
+      error: (error) => {
+        console.error('Failed to delete customer', error);
+      }
     });
   }
 

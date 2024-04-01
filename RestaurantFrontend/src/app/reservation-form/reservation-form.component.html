@@ -1,4 +1,4 @@
-<form [formGroup]="reservationForm" (ngSubmit)="onSubmit()">
+<form *ngIf="!showConfirmation" [formGroup]="reservationForm" (ngSubmit)="onSubmit()">
   <div>
     <label for="firstName">First Name:</label>
     <input type="text" formControlName="firstName" id="firstName">
@@ -17,3 +17,13 @@
   </div>
   <button type="submit">Submit Reservation</button>
 </form>
+
+<div *ngIf="showConfirmation">
+  <p>First Name: {{ reservationForm.value.firstName }}</p>
+  <p>Last Name: {{ reservationForm.value.lastName }}</p>
+  <p>Reservation Time: {{ reservationForm.value.reservationTime }}</p>
+  <p>Number of Guests: {{ reservationForm.value.numberOfGuests }}</p>
+  
+  <button type="button" (click)="onEdit()">Back</button>
+  <button type="button" (click)="onConfirm()">Confirm</button>
+</div>

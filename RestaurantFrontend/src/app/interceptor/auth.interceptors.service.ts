@@ -4,11 +4,10 @@ import {
     HttpHandler,
     HttpEvent,
     HttpInterceptor,
-    HttpResponse,
     HttpErrorResponse
 } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { catchError } from 'rxjs/operators';
 import { Router } from '@angular/router';
 
 @Injectable()
@@ -17,15 +16,11 @@ export class AuthInterceptor implements HttpInterceptor {
     constructor(private router: Router) {}
 
     intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-        // Add auth token to headers if it exists
-        const authToken = localStorage.getItem('authToken');
-        if (authToken) {
-            request = request.clone({
-                setHeaders: {
-                    Authorization: `Bearer ${authToken}`
-                }
-            });
-        }
+        // Clone the request to add withCredentials: true
+        // This ensures credentials are included in cross-origin requests
+        request = request.clone({
+            withCredentials: true
+        });
 
         // Handle the response
         return next.handle(request).pipe(
@@ -34,7 +29,7 @@ export class AuthInterceptor implements HttpInterceptor {
                 if (error.status === 401) {
                     this.router.navigate(['/login']);
                 }
-                return throwError(error);
+                return throwError(() => error);
             })
         );
     }

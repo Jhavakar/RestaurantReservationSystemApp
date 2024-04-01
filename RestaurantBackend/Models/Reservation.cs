@@ -16,12 +16,10 @@ namespace RestaurantBackend.Models
         [CustomValidation(typeof(ReservationValidator), nameof(ReservationValidator.ValidateReservationTime))]
         public DateTime ReservationTime { get; set; }
         
-        // Automatically calculated to be 1 hour after ReservationTime
-        // No change needed here since the logic remains the same.
         public DateTime ReservationEndTime { get; set; }
 
-        [Required]
-        public int TableId { get; set; }
+        // [Required]
+        // public int TableId { get; set; }
 
         [Required]
         public int CustomerId { get; set; }
@@ -30,7 +28,11 @@ namespace RestaurantBackend.Models
         public int NumberOfGuests { get; set; }
 
         // Navigation properties
-        public virtual Table Table { get; set; }
+        
+        [ForeignKey("CustomerId")]
         public virtual Customer Customer { get; set; }
+
+        // public virtual Table Table { get; set; }
+
     }
 }

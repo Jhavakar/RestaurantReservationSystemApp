@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using RestaurantBackend.Models;
 using RestaurantBackend.Services;
+using RestaurantBackend.ViewModels;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -24,22 +25,17 @@ namespace RestaurantBackend.Controllers
 
         // POST: api/Reservations
         [HttpPost]
-        public async Task<IActionResult> CreateReservation([FromBody] Reservation reservation)
+        public async Task<IActionResult> CreateReservation([FromBody] ReservationVM model)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             try
             {
-                var createdReservation = await _reservationService.CreateReservationAsync(reservation);
-                return CreatedAtAction(nameof(GetReservationById), new { id = createdReservation.ReservationId }, createdReservation);
+                var reservation = await _reservationService.CreateReservationWithCustomerAsync(model);
+                return CreatedAtAction(nameof(GetReservationById), new { id = reservation.ReservationId }, reservation);
             }
             catch (System.Exception ex)
             {
-                _logger.LogError("Unable to create reservation, possible conflicts or validation failure: {ExceptionMessage}", ex.Message);
-                return BadRequest("Unable to create reservation, possible conflicts or validation error.");
+                _logger.LogError(ex, "Error creating reservation.");
+                return BadRequest("Error creating reservation.");
             }
         }
 

@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using RestaurantBackend.Data;
 using RestaurantBackend.Models;
+using RestaurantBackend.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +13,7 @@ namespace RestaurantBackend.Services
     public interface IReservationService
     {
         Task<Reservation> CreateReservationAsync(Reservation reservation);
+        Task<Reservation> CreateReservationWithCustomerAsync(ReservationVM model);
         Task<Reservation> GetReservationByIdAsync(int reservationId);
         Task<IEnumerable<Reservation>> GetAllReservationsAsync();
         Task UpdateReservationAsync(Reservation reservation);
@@ -38,6 +40,40 @@ namespace RestaurantBackend.Services
             await _context.SaveChangesAsync();
             _logger.LogInformation("Reservation created successfully.");
             return reservation; // This is correct; no need to redeclare a new Reservation object.
+        }
+
+        public async Task<Reservation> CreateReservationWithCustomerAsync(ReservationVM model)
+        {
+            // Attempt to find an existing customer by email address
+            var customer = await _context.Customers
+                                .FirstOrDefaultAsync(c => c.EmailAddress == model.EmailAddress);
+
+            // If the customer does not exist, create a new one
+            if (customer == null)
+            {
+                customer = new Customer
+                {
+                    FirstName = model.FirstName,
+                    LastName = model.LastName,
+                    EmailAddress = model.EmailAddress,
+                };
+
+                _context.Customers.Add(customer);
+                await _context.SaveChangesAsync(); // Save the new customer to generate a CustomerId
+            }
+
+            // Create the reservation linked to the identified or newly created customer
+            var reservation = new Reservation
+            {
+                CustomerId = customer.CustomerId, 
+                ReservationTime = model.ReservationTime,
+                NumberOfGuests = model.NumberOfGuests,
+            };
+
+            _context.Reservations.Add(reservation);
+            await _context.SaveChangesAsync(); // Save the new reservation
+
+            return reservation; 
         }
 
         public async Task<Reservation> GetReservationByIdAsync(int reservationId)
