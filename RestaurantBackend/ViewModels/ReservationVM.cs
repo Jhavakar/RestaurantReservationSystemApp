@@ -12,18 +12,16 @@ namespace RestaurantBackend.ViewModels
         public DateTime ReservationTime { get; set; } // Includes both date and time
 
         [Required, MaxLength(50)]
-        public string FirstName { get; set; }
+        public string FirstName { get; set; } = string.Empty;
 
         [Required, MaxLength(50)]
-        public string LastName { get; set; }
+        public string LastName { get; set; } = string.Empty;
 
         [Required, EmailAddress]
-        public string EmailAddress { get; set; }
+        public string EmailAddress { get; set; } = string.Empty;
 
-        [Required]
-        public int TableId { get; set; }
+        // public int TableId { get; set; }
 
-        [Required]
         public int? CustomerId { get; set; }
 
         [Required, Range(1, int.MaxValue, ErrorMessage = "The number of guests must be at least 1.")]

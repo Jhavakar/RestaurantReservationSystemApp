@@ -6,14 +6,14 @@ public class CustomerVM
     public int? CustomerId { get; set; } // Make it nullable for creation
 
     [Required, MaxLength(50)]
-    public string FirstName { get; set; }
+    public string FirstName { get; set; } = string.Empty; 
 
     [Required, MaxLength(50)]
-    public string LastName { get; set; }
+    public string LastName { get; set; } = string.Empty;
 
     [Required, EmailAddress]
-    public string EmailAddress { get; set; }
+    public string EmailAddress { get; set; } = string.Empty;
 
     [Phone]
-    public string PhoneNo { get; set; }
+    public string PhoneNo { get; set; } = string.Empty;
 }

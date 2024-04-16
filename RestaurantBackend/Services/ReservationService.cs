@@ -6,6 +6,8 @@ using RestaurantBackend.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Mail;
 using System.Threading.Tasks;
 
 namespace RestaurantBackend.Services
@@ -24,11 +26,15 @@ namespace RestaurantBackend.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly ILogger<ReservationService> _logger;
+        private readonly IConfiguration _configuration;
+        private readonly ICustomerService _customerService; 
 
-        public ReservationService(ApplicationDbContext context, ILogger<ReservationService> logger)
+        public ReservationService(ApplicationDbContext context, ILogger<ReservationService> logger, IConfiguration configuration, ICustomerService customerService)
         {
             _context = context;
             _logger = logger;
+            _configuration = configuration;
+            _customerService = customerService;
         }
 
         public async Task<Reservation> CreateReservationAsync(Reservation reservation)
@@ -44,9 +50,8 @@ namespace RestaurantBackend.Services
 
         public async Task<Reservation> CreateReservationWithCustomerAsync(ReservationVM model)
         {
-            // Attempt to find an existing customer by email address
-            var customer = await _context.Customers
-                                .FirstOrDefaultAsync(c => c.EmailAddress == model.EmailAddress);
+            // Attempt to find an existing customer by email address using the CustomerService
+            var customer = await _customerService.GetCustomerByEmailAsync(model.EmailAddress);
 
             // If the customer does not exist, create a new one
             if (customer == null)
@@ -55,23 +60,26 @@ namespace RestaurantBackend.Services
                 {
                     FirstName = model.FirstName,
                     LastName = model.LastName,
-                    EmailAddress = model.EmailAddress,
+                    EmailAddress = model.EmailAddress.Trim(),
                 };
 
                 _context.Customers.Add(customer);
-                await _context.SaveChangesAsync(); // Save the new customer to generate a CustomerId
+                await _context.SaveChangesAsync(); // This line generates CustomerId
             }
 
-            // Create the reservation linked to the identified or newly created customer
+            // Your existing logic to create a reservation...
             var reservation = new Reservation
             {
-                CustomerId = customer.CustomerId, 
+                CustomerId = customer.CustomerId,
                 ReservationTime = model.ReservationTime,
                 NumberOfGuests = model.NumberOfGuests,
             };
 
             _context.Reservations.Add(reservation);
-            await _context.SaveChangesAsync(); // Save the new reservation
+            await _context.SaveChangesAsync(); // This line generates ReservationId
+
+            // Correctly call SendConfirmationEmail with both required parameters
+            await SendConfirmationEmail(reservation, customer.EmailAddress);
 
             return reservation; 
         }
@@ -145,5 +153,30 @@ namespace RestaurantBackend.Services
         //     return !overlappingReservations.Any();
         // }
     
+        private async Task SendConfirmationEmail(Reservation reservation, string customerEmail)
+        {
+            try
+            {
+                var smtpClient = new SmtpClient("smtp.gmail.com")
+                {
+                    Port = 587,
+                    Credentials = new NetworkCredential(_configuration["EmailSettings:EmailAddress"], _configuration["EmailSettings:Password"]),
+                    EnableSsl = true,
+                };
+
+                using (var message = new MailMessage(_configuration["EmailSettings:EmailAddress"], customerEmail))
+                {
+                    message.Subject = "Your reservation confirmation";
+                    // Removed reference to customer.FirstName
+                    message.Body = $"Your reservation for {reservation.ReservationTime} with {reservation.NumberOfGuests} guests has been successfully made.";
+                    await smtpClient.SendMailAsync(message);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send confirmation email for reservation ID: {ReservationId}", reservation.ReservationId);
+            }
+        }
+
     }
 }

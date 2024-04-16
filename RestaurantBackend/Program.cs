@@ -66,6 +66,7 @@ builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("AppSet
 
 // Adding scoped services for business logic
 builder.Services.AddScoped<ICustomerService, CustomerService>();
+builder.Services.AddScoped<IReservationService, ReservationService>();
 // builder.Services.AddScoped<ITableService, TableService>();
 
 // JWT Authentication setup

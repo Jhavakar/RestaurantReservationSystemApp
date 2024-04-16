@@ -8,7 +8,7 @@ import { ReservationModel } from '../models/reservation.model';
 })
 
 export class ReservationService {
-  private apiUrl = 'https://localhost:5068/api/reservations'; 
+  private apiUrl = 'http://localhost:5068/api/reservations'; 
 
   constructor(private http: HttpClient) { }
 

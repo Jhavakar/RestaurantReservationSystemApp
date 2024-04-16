@@ -16,6 +16,7 @@ namespace RestaurantBackend.Services
         Task<Customer> AddCustomerAsync(Customer customer);
         Task<Customer> GetCustomerByIdAsync(int customerId);
         Task<IEnumerable<Customer>> GetAllCustomersAsync();
+        Task<Customer> GetCustomerByEmailAsync(string emailAddress);
         Task<Customer> UpdateCustomerAsync(Customer customer);
         Task DeleteCustomerAsync(int customerId);
     }
@@ -50,6 +51,13 @@ namespace RestaurantBackend.Services
             return await _context.Customers.ToListAsync();
         }
 
+        public async Task<Customer> GetCustomerByEmailAsync(string email)
+        {
+            return await _context.Customers
+                .FirstOrDefaultAsync(c => EF.Functions.Like(c.EmailAddress, email.Trim()));
+        }
+
+
         public async Task<Customer> UpdateCustomerAsync(Customer customer)
         {
             var existingCustomer = await _context.Customers.FindAsync(customer.CustomerId);
@@ -78,5 +86,6 @@ namespace RestaurantBackend.Services
                 _logger.LogWarning($"Customer with ID {customerId} not found for deletion.");
             }
         }
+        
     }
 }

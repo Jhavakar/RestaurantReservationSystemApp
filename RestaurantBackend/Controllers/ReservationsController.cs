@@ -11,7 +11,7 @@ namespace RestaurantBackend.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    // [Authorize]
     public class ReservationsController : ControllerBase
     {
         private readonly IReservationService _reservationService;
@@ -27,6 +27,15 @@ namespace RestaurantBackend.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateReservation([FromBody] ReservationVM model)
         {
+            if (!ModelState.IsValid)
+            {
+                foreach (var error in ModelState)
+                {
+                    _logger.LogError("Validation error for {Field}: {Errors}", error.Key, string.Join(", ", error.Value.Errors.Select(e => e.ErrorMessage)));
+                }                
+                return BadRequest(ModelState);
+            }
+
             try
             {
                 var reservation = await _reservationService.CreateReservationWithCustomerAsync(model);
@@ -38,6 +47,7 @@ namespace RestaurantBackend.Controllers
                 return BadRequest("Error creating reservation.");
             }
         }
+
 
         // GET: api/Reservations
         [HttpGet]

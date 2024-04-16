@@ -1,13 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { ReservationService } from '../services/reservation.service';
-import { Reservation } from '../models/reservation.model';
+import { ReservationModel } from '../models/reservation.model';
 
 @Component({
   selector: 'app-reservation-list',
   templateUrl: './reservation-list.component.html'
 })
 export class ReservationListComponent implements OnInit {
-  reservations: Reservation[] = [];
+  reservations: ReservationModel[] = [];
 
   constructor(private reservationService: ReservationService) { }
 

@@ -20,6 +20,7 @@ export class ReservationFormComponent {
       lastName: ['', Validators.required],
       reservationTime: ['', Validators.required],
       numberOfGuests: ['', [Validators.required, Validators.min(1)]],
+      emailAddress: ['', [Validators.required, Validators.email]],
     });
   }
 
@@ -53,7 +54,7 @@ export class ReservationFormComponent {
     const reservationData = this.reservationForm.value;
     // Call the ReservationService to submit the data
     this.reservationService.createReservation(reservationData).subscribe({
-      next: response => {
+      next: (response) => {
         console.log('Reservation confirmed:', response);
       },
       error: (error) => console.error('There was an error!', error)
