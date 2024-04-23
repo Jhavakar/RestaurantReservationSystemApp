@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using RestaurantBackend.Data;
@@ -8,80 +9,99 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Mail;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 
 namespace RestaurantBackend.Services
 {
     public interface IReservationService
     {
-        Task<Reservation> CreateReservationAsync(Reservation reservation);
-        Task<Reservation> CreateReservationWithCustomerAsync(ReservationVM model);
+        Task<Reservation> CreateReservationAsync(Reservation reservation, string emailAddress);
+        Task<bool> UpdateReservationAsync(Reservation reservation);
+        Task<bool> CancelReservationAsync(int reservationId);
         Task<Reservation> GetReservationByIdAsync(int reservationId);
         Task<IEnumerable<Reservation>> GetAllReservationsAsync();
-        Task UpdateReservationAsync(Reservation reservation);
-        Task CancelReservationAsync(int reservationId);
+        Task SendConfirmationEmail(Customer customer, Reservation reservation); 
+        Task<string> GenerateTemporaryPassword(int length = 8);
     }
 
     public class ReservationService : IReservationService
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<Customer> _userManager;
         private readonly ILogger<ReservationService> _logger;
         private readonly IConfiguration _configuration;
         private readonly ICustomerService _customerService; 
 
-        public ReservationService(ApplicationDbContext context, ILogger<ReservationService> logger, IConfiguration configuration, ICustomerService customerService)
+        public ReservationService(ApplicationDbContext context, UserManager<Customer> userManager, ILogger<ReservationService> logger, IConfiguration configuration, ICustomerService customerService)
         {
             _context = context;
+            _userManager = userManager;
             _logger = logger;
             _configuration = configuration;
             _customerService = customerService;
         }
 
-        public async Task<Reservation> CreateReservationAsync(Reservation reservation)
+        public async Task<Reservation> CreateReservationAsync(Reservation reservation, string emailAddress)
         {
-            // Correctly setting ReservationEndTime to 1 hour after ReservationTime
-            reservation.ReservationEndTime = reservation.ReservationTime.AddHours(1);
-
-            _context.Reservations.Add(reservation);
-            await _context.SaveChangesAsync();
-            _logger.LogInformation("Reservation created successfully.");
-            return reservation; // This is correct; no need to redeclare a new Reservation object.
-        }
-
-        public async Task<Reservation> CreateReservationWithCustomerAsync(ReservationVM model)
-        {
-            // Attempt to find an existing customer by email address using the CustomerService
-            var customer = await _customerService.GetCustomerByEmailAsync(model.EmailAddress);
-
-            // If the customer does not exist, create a new one
-            if (customer == null)
+            _logger.LogInformation("Attempting to find or create user for email: {Email}", emailAddress);
+            var user = await _userManager.FindByEmailAsync(emailAddress);
+            if (user == null)
             {
-                customer = new Customer
+                _logger.LogInformation("No user found for email {Email}, creating new user.", emailAddress);
+                user = new Customer { Email = emailAddress, UserName = emailAddress };
+                var createUserResult = await _userManager.CreateAsync(user);
+                if (!createUserResult.Succeeded)
                 {
-                    FirstName = model.FirstName,
-                    LastName = model.LastName,
-                    EmailAddress = model.EmailAddress.Trim(),
-                };
-
-                _context.Customers.Add(customer);
-                await _context.SaveChangesAsync(); // This line generates CustomerId
+                    _logger.LogError("Failed to create a new user for the email: {Email}", emailAddress);
+                    return null;
+                }
             }
 
-            // Your existing logic to create a reservation...
-            var reservation = new Reservation
-            {
-                CustomerId = customer.CustomerId,
-                ReservationTime = model.ReservationTime,
-                NumberOfGuests = model.NumberOfGuests,
-            };
+            // Additional user update logic if necessary
+            _logger.LogInformation("User created or retrieved with email: {Email}", user.Email);
 
+            // Set reservation details
+            reservation.UserId = user.Id;
             _context.Reservations.Add(reservation);
-            await _context.SaveChangesAsync(); // This line generates ReservationId
+            await _context.SaveChangesAsync();
 
-            // Correctly call SendConfirmationEmail with both required parameters
-            await SendConfirmationEmail(reservation, customer.EmailAddress);
 
-            return reservation; 
+            // Send confirmation email with the reservation details and temporary password
+            _logger.LogInformation("Sending confirmation email to {Email}", emailAddress);
+            await SendConfirmationEmail(user, reservation);
+
+            return reservation;
+        }
+
+        public async Task<bool> UpdateReservationAsync(Reservation reservation)
+        {
+            var existingReservation = await _context.Reservations.FindAsync(reservation.ReservationId);
+            if (existingReservation == null)
+            {
+                _logger.LogWarning("Reservation with ID {id} not found for update.", reservation.ReservationId);
+                return false;
+            }
+
+            _context.Entry(existingReservation).CurrentValues.SetValues(reservation);
+            await _context.SaveChangesAsync();
+            _logger.LogInformation("Updated reservation ID {id}", reservation.ReservationId);
+            return true;
+        }
+
+        public async Task<bool> CancelReservationAsync(int reservationId)
+        {
+            var reservation = await _context.Reservations.FindAsync(reservationId);
+            if (reservation == null)
+            {
+                _logger.LogWarning("Reservation with ID {id} not found for cancellation.", reservationId);
+                return false;
+            }
+
+            _context.Reservations.Remove(reservation);
+            await _context.SaveChangesAsync();
+            _logger.LogInformation("Cancelled reservation ID {id}", reservationId);
+            return true;
         }
 
         public async Task<Reservation> GetReservationByIdAsync(int reservationId)
@@ -91,92 +111,68 @@ namespace RestaurantBackend.Services
 
         public async Task<IEnumerable<Reservation>> GetAllReservationsAsync()
         {
+        try
+        {
             return await _context.Reservations.ToListAsync();
         }
-
-        public async Task UpdateReservationAsync(Reservation reservation)
+        catch (Exception ex) // Ensure that ex is defined in a catch block
         {
+            _logger.LogError(ex, "Failed to retrieve all reservations.");
+            throw; // Rethrow the exception or handle it as needed
+        }
+    }
+
+        public async Task SendConfirmationEmail(Customer customer, Reservation reservation)
+        {
+            if (customer == null || string.IsNullOrEmpty(customer.Email))
+            {
+                _logger.LogError("Invalid customer data. Email is missing.");
+                return;
+            }
+
             try
             {
-                var existingReservation = await _context.Reservations.FindAsync(reservation.ReservationId);
-                if (existingReservation == null)
-                {
-                    _logger.LogWarning($"Reservation with ID {reservation.ReservationId} not found for update.");
-                    throw new KeyNotFoundException($"Reservation with ID {reservation.ReservationId} not found.");
-                }                
-
-                _context.Entry(existingReservation).CurrentValues.SetValues(reservation);
-                await _context.SaveChangesAsync();
-                _logger.LogInformation($"Reservation updated: {reservation}");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"An error occurred while updating reservation with ID {reservation.ReservationId}.");
-                throw; // Re-throwing the exception preserves the stack trace but allows for custom logging
-            }
-        }
-
-        public async Task CancelReservationAsync(int reservationId)
-        {
-            var reservation = await _context.Reservations.FindAsync(reservationId);
-            if (reservation != null)
-            {
-                _context.Reservations.Remove(reservation);
-                await _context.SaveChangesAsync();
-                _logger.LogInformation("Reservation with ID {ReservationId} deleted.", reservationId);
-            }
-            else
-            {
-                _logger.LogWarning("Reservation with ID {ReservationId} not found for deletion.", reservationId);
-        }
-        }
-
-        // private async Task<bool> IsTableAvailableAsync(int tableId, DateTime requestedTime, TimeSpan duration)
-        // {
-        //     var overlappingReservations = await _context.Reservations
-        //         .Where(r => r.TableId == tableId &&
-        //                     ((r.ReservationTime <= requestedTime && r.ReservationEndTime > requestedTime) ||
-        //                      (requestedTime.Add(duration) > r.ReservationTime && requestedTime.Add(duration) <= r.ReservationEndTime)))
-        //         .ToListAsync();
-
-        //     return !overlappingReservations.Any();
-        //     }
-
-        // private async Task<bool> IsTableAvailableAsync(int tableId, DateTime requestedTime, TimeSpan duration)
-        // {
-        //     var overlappingReservations = await _context.Reservations
-        //         .Where(r => r.TableId == tableId &&
-        //                     ((r.ReservationTime <= requestedTime && r.ReservationEndTime > requestedTime) ||
-        //                      (requestedTime.Add(duration) > r.ReservationTime && requestedTime.Add(duration) <= r.ReservationEndTime)))
-        //         .ToListAsync();
-
-        //     return !overlappingReservations.Any();
-        // }
-    
-        private async Task SendConfirmationEmail(Reservation reservation, string customerEmail)
-        {
-            try
-            {
-                var smtpClient = new SmtpClient("smtp.gmail.com")
+                using var smtpClient = new SmtpClient("smtp.gmail.com")
                 {
                     Port = 587,
                     Credentials = new NetworkCredential(_configuration["EmailSettings:EmailAddress"], _configuration["EmailSettings:Password"]),
                     EnableSsl = true,
                 };
 
-                using (var message = new MailMessage(_configuration["EmailSettings:EmailAddress"], customerEmail))
+                using var message = new MailMessage(_configuration["EmailSettings:EmailAddress"], customer.Email)
                 {
-                    message.Subject = "Your reservation confirmation";
-                    // Removed reference to customer.FirstName
-                    message.Body = $"Your reservation for {reservation.ReservationTime} with {reservation.NumberOfGuests} guests has been successfully made.";
-                    await smtpClient.SendMailAsync(message);
-                }
+                    Subject = "Your reservation confirmation",
+                    Body = $"Dear {customer.FirstName},\n\n" +
+                        $"Your reservation for {reservation.ReservationTime} with {reservation.NumberOfGuests} guests has been successfully made.\n\n" +
+                        $"Your temporary password to manage your reservation is: {customer.TemporaryPassword}\n\n" +
+                        $"Please use this password to log in and manage your reservation details. Note: This password will expire in 24 hours.\n\n" +
+                        $"Best regards,\n" +
+                        $"Your Restaurant Team",
+                    IsBodyHtml = true
+                };
+
+                _logger.LogInformation("Sending confirmation email to {Email} with temporary password {TemporaryPassword}", customer.Email, customer.TemporaryPassword);
+                await smtpClient.SendMailAsync(message);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to send confirmation email for reservation ID: {ReservationId}", reservation.ReservationId);
+                _logger.LogError(ex, "Failed to send confirmation email to {Email}.", customer.Email);
             }
         }
 
+        public async Task<string> GenerateTemporaryPassword(int length = 8)
+        {
+            const string validChars = "ABCDEFGHJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            using var rng = RandomNumberGenerator.Create(); // Correct usage of RandomNumberGenerator
+            var bytes = new byte[length];
+            rng.GetBytes(bytes);
+            var chars = new char[length];
+            for (int i = 0; i < length; i++)
+            {
+                chars[i] = validChars[bytes[i] % validChars.Length];
+            }
+            return new string(chars);
+        }
+    
     }
 }

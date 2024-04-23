@@ -39,7 +39,7 @@ namespace RestaurantBackend.Data
             // Configure relationships, indices, etc.
 
             modelBuilder.Entity<Customer>()
-            .HasIndex(c => c.EmailAddress)
+            .HasIndex(c => c.Email)
             .IsUnique();
 
 

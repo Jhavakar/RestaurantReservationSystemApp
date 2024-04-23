@@ -1,19 +1,24 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+
 public class CustomerVM
 {
-    public int? CustomerId { get; set; } // Make it nullable for creation
+    // Use string for Id; Identity typically handles IDs as strings
+    // public string Id { get; set; }
 
     [Required, MaxLength(50)]
-    public string FirstName { get; set; } = string.Empty; 
+    public string FirstName { get; set; }
 
     [Required, MaxLength(50)]
-    public string LastName { get; set; } = string.Empty;
+    public string LastName { get; set; }
 
     [Required, EmailAddress]
-    public string EmailAddress { get; set; } = string.Empty;
+    public string EmailAddress { get; set; }
 
     [Phone]
-    public string PhoneNo { get; set; } = string.Empty;
+    public string PhoneNumber { get; set; }
+
+    // Add a Password field if this VM is used for creating new users
+    [Required, DataType(DataType.Password)]
+    public string Password { get; set; }
 }

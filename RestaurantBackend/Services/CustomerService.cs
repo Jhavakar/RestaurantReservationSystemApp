@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using RestaurantBackend.Data;
 using RestaurantBackend.Models;
@@ -11,81 +11,171 @@ using System.Threading.Tasks;
 
 namespace RestaurantBackend.Services
 {
-     public interface ICustomerService
+    public interface ICustomerService
     {
-        Task<Customer> AddCustomerAsync(Customer customer);
-        Task<Customer> GetCustomerByIdAsync(int customerId);
-        Task<IEnumerable<Customer>> GetAllCustomersAsync();
-        Task<Customer> GetCustomerByEmailAsync(string emailAddress);
-        Task<Customer> UpdateCustomerAsync(Customer customer);
-        Task DeleteCustomerAsync(int customerId);
+        Task<IdentityResult> CreateCustomerAsync(CustomerVM model);
+        Task<IdentityResult> UpdateCustomerAsync(string customerId, CustomerVM model);
+        Task<IdentityResult> DeleteCustomerAsync(string customerId);
+        Task<CustomerVM> GetCustomerByIdAsync(string customerId);
+        Task<CustomerVM> GetCustomerByEmailAsync(string email);
+        Task<IdentityResult> UpdatePasswordAsync(string userId, string newPassword);
     }
-
 
     public class CustomerService : ICustomerService
     {
-        private readonly ApplicationDbContext _context;
+        private readonly UserManager<Customer> _userManager;
         private readonly ILogger<CustomerService> _logger;
 
-        public CustomerService(ApplicationDbContext context, ILogger<CustomerService> logger)
+        public CustomerService(UserManager<Customer> userManager, ILogger<CustomerService> logger)
         {
-            _context = context;
+            _userManager = userManager;
             _logger = logger;
         }
 
-        public async Task<Customer> AddCustomerAsync(Customer customer)
+        public async Task<IdentityResult> CreateCustomerAsync(CustomerVM model)
         {
-            _context.Customers.Add(customer);
-            await _context.SaveChangesAsync();
-            _logger.LogInformation($"Customer added: {customer}");
-            return customer; // Return the Customer entity directly
-        }
-
-        public async Task<Customer> GetCustomerByIdAsync(int customerId)
-        {
-            return await _context.Customers.FindAsync(customerId);
-        }
-
-        public async Task<IEnumerable<Customer>> GetAllCustomersAsync()
-        {
-            return await _context.Customers.ToListAsync();
-        }
-
-        public async Task<Customer> GetCustomerByEmailAsync(string email)
-        {
-            return await _context.Customers
-                .FirstOrDefaultAsync(c => EF.Functions.Like(c.EmailAddress, email.Trim()));
-        }
-
-
-        public async Task<Customer> UpdateCustomerAsync(Customer customer)
-        {
-            var existingCustomer = await _context.Customers.FindAsync(customer.CustomerId);
-            if (existingCustomer != null)
+            var customer = new Customer
             {
-                _context.Entry(existingCustomer).CurrentValues.SetValues(customer);
-                await _context.SaveChangesAsync();
-                _logger.LogInformation($"Customer updated: {customer}");
-                return existingCustomer;
+                Email = model.EmailAddress,
+                UserName = model.EmailAddress, // Ensure this is not null or empty
+                FirstName = model.FirstName,
+                LastName = model.LastName,
+                PhoneNumber = model.PhoneNumber
+            };
+
+            // Check if UserName or Email is empty or null
+            if (string.IsNullOrWhiteSpace(customer.UserName) || string.IsNullOrWhiteSpace(customer.Email))
+            {
+                _logger.LogError("Username or Email is empty. Username and Email must be provided.");
+                return IdentityResult.Failed(new IdentityError { Description = "Username or Email is empty." });
             }
-            return null;
-        }
 
-
-        public async Task DeleteCustomerAsync(int customerId)
-        {
-            var customer = await _context.Customers.FindAsync(customerId);
-            if (customer != null)
+            var result = await _userManager.CreateAsync(customer, model.Password);
+            if (result.Succeeded)
             {
-                _context.Customers.Remove(customer);
-                await _context.SaveChangesAsync();
-                _logger.LogInformation($"Customer with ID {customerId} deleted.");
+                _logger.LogInformation($"New customer registered: {customer.Email}");
             }
             else
             {
-                _logger.LogWarning($"Customer with ID {customerId} not found for deletion.");
+                foreach (var error in result.Errors)
+                {
+                    _logger.LogError($"Error creating user: {error.Description}");
+                }
             }
+            return result;
         }
-        
+
+        public async Task<IdentityResult> UpdateCustomerAsync(string customerId, CustomerVM model)
+        {
+            var customer = await _userManager.FindByIdAsync(customerId);
+            if (customer == null)
+            {
+                _logger.LogError($"No customer found with ID {customerId}");
+                return IdentityResult.Failed(new IdentityError { Description = "Customer not found." });
+            }
+
+            customer.FirstName = model.FirstName;
+            customer.LastName = model.LastName;
+            customer.PhoneNumber = model.PhoneNumber;
+            customer.Email = model.EmailAddress;  // Update email if needed, consider implications for login
+
+            var result = await _userManager.UpdateAsync(customer);
+            if (result.Succeeded)
+            {
+                _logger.LogInformation($"Customer updated: {customer.Email}");
+            }
+            else
+            {
+                foreach (var error in result.Errors)
+                {
+                    _logger.LogError($"Error updating customer: {error.Description}");
+                }
+            }
+            return result;
+        }
+
+        public async Task<IdentityResult> DeleteCustomerAsync(string customerId)
+        {
+            var customer = await _userManager.FindByIdAsync(customerId);
+            if (customer == null)
+            {
+                _logger.LogError($"No customer found with ID {customerId}");
+                return IdentityResult.Failed(new IdentityError { Description = "Customer not found." });
+            }
+
+            var result = await _userManager.DeleteAsync(customer);
+            if (result.Succeeded)
+            {
+                _logger.LogInformation($"Customer deleted: {customer.Email}");
+            }
+            else
+            {
+                foreach (var error in result.Errors)
+                {
+                    _logger.LogError($"Error deleting customer: {error.Description}");
+                }
+            }
+            return result;
+        }
+
+        public async Task<CustomerVM> GetCustomerByIdAsync(string customerId)
+        {
+            var customer = await _userManager.FindByIdAsync(customerId);
+            if (customer == null)
+            {
+                _logger.LogWarning($"Customer ID {customerId} not found.");
+                return null;
+            }
+
+            return new CustomerVM
+            {
+                FirstName = customer.FirstName,
+                LastName = customer.LastName,
+                EmailAddress = customer.Email,
+                PhoneNumber = customer.PhoneNumber
+            };
+        }
+
+        public async Task<CustomerVM> GetCustomerByEmailAsync(string email)
+        {
+            var customer = await _userManager.FindByEmailAsync(email);
+            if (customer == null)
+            {
+                _logger.LogError($"No customer found with email {email}");
+                return null;
+            }
+
+            return new CustomerVM
+            {
+                FirstName = customer.FirstName,
+                LastName = customer.LastName,
+                EmailAddress = customer.Email,
+                PhoneNumber = customer.PhoneNumber
+            };
+        }
+ 
+        public async Task<IdentityResult> UpdatePasswordAsync(string userId, string newPassword)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                _logger.LogError($"User with ID {userId} not found.");
+                return IdentityResult.Failed(new IdentityError { Description = "User not found" });
+            }
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
+            if (result.Succeeded)
+            {
+                // Assuming temporary password logic needs to be handled
+                user.TemporaryPassword = newPassword; // Consider hashing if storing temporarily
+                user.TemporaryPasswordExpiration = DateTime.UtcNow.AddDays(7); // Set the expiration time
+                await _userManager.UpdateAsync(user);
+            }
+
+            return result;
+        }
+
     }
+
 }

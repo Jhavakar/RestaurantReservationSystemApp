@@ -15,7 +15,7 @@ namespace RestaurantBackend.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "8.0.3");
+            modelBuilder.HasAnnotation("ProductVersion", "8.0.4");
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
@@ -78,6 +78,11 @@ namespace RestaurantBackend.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasMaxLength(13)
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Email")
                         .HasMaxLength(256)
                         .HasColumnType("TEXT");
@@ -128,6 +133,10 @@ namespace RestaurantBackend.Migrations
                         .HasDatabaseName("UserNameIndex");
 
                     b.ToTable("AspNetUsers", (string)null);
+
+                    b.HasDiscriminator<string>("Discriminator").HasValue("IdentityUser");
+
+                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
@@ -209,15 +218,32 @@ namespace RestaurantBackend.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("RestaurantBackend.Models.Customer", b =>
+            modelBuilder.Entity("RestaurantBackend.Models.Reservation", b =>
                 {
-                    b.Property<int>("CustomerId")
+                    b.Property<int>("ReservationId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("EmailAddress")
+                    b.Property<int>("NumberOfGuests")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("ReservationTime")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("TEXT");
+
+                    b.HasKey("ReservationId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Reservations");
+                });
+
+            modelBuilder.Entity("RestaurantBackend.Models.Customer", b =>
+                {
+                    b.HasBaseType("Microsoft.AspNetCore.Identity.IdentityUser");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
@@ -229,41 +255,17 @@ namespace RestaurantBackend.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("PhoneNo")
+                    b.Property<string>("TemporaryPassword")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.HasKey("CustomerId");
+                    b.Property<DateTime?>("TemporaryPasswordExpiration")
+                        .HasColumnType("TEXT");
 
-                    b.HasIndex("EmailAddress")
+                    b.HasIndex("Email")
                         .IsUnique();
 
-                    b.ToTable("Customers");
-                });
-
-            modelBuilder.Entity("RestaurantBackend.Models.Reservation", b =>
-                {
-                    b.Property<int>("ReservationId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("CustomerId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("NumberOfGuests")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("ReservationEndTime")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("ReservationTime")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("ReservationId");
-
-                    b.HasIndex("CustomerId");
-
-                    b.ToTable("Reservations");
+                    b.HasDiscriminator().HasValue("Customer");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -319,13 +321,13 @@ namespace RestaurantBackend.Migrations
 
             modelBuilder.Entity("RestaurantBackend.Models.Reservation", b =>
                 {
-                    b.HasOne("RestaurantBackend.Models.Customer", "Customer")
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
                         .WithMany()
-                        .HasForeignKey("CustomerId")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Customer");
+                    b.Navigation("User");
                 });
 #pragma warning restore 612, 618
         }

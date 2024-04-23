@@ -5,5 +5,5 @@ export interface ReservationModel {
   firstName: string;
   lastName: string;
   emailAddress: string;
-  phoneNo?: string;
+  phoneNumber?: string;
 }

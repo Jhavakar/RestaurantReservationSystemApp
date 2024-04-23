@@ -1,3 +1,4 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -16,11 +17,13 @@ namespace RestaurantBackend.Controllers
     {
         private readonly IReservationService _reservationService;
         private readonly ILogger<ReservationsController> _logger;
+        private readonly IMapper _mapper;
 
-        public ReservationsController(IReservationService reservationService, ILogger<ReservationsController> logger)
+        public ReservationsController(IReservationService reservationService, ILogger<ReservationsController> logger, IMapper mapper)
         {
-            _reservationService = reservationService;          
+            _reservationService = reservationService;
             _logger = logger;
+            _mapper = mapper;
         }
 
         // POST: api/Reservations
@@ -29,31 +32,29 @@ namespace RestaurantBackend.Controllers
         {
             if (!ModelState.IsValid)
             {
-                foreach (var error in ModelState)
-                {
-                    _logger.LogError("Validation error for {Field}: {Errors}", error.Key, string.Join(", ", error.Value.Errors.Select(e => e.ErrorMessage)));
-                }                
                 return BadRequest(ModelState);
             }
 
             try
             {
-                var reservation = await _reservationService.CreateReservationWithCustomerAsync(model);
-                return CreatedAtAction(nameof(GetReservationById), new { id = reservation.ReservationId }, reservation);
+                var reservation = _mapper.Map<Reservation>(model);
+                var createdReservation = await _reservationService.CreateReservationAsync(reservation, model.EmailAddress);
+                if (createdReservation == null)
+                {
+                    _logger.LogError("Failed to create reservation.");
+                    return BadRequest("Failed to create the reservation.");
+                }
+
+                var responseModel = _mapper.Map<ReservationVM>(createdReservation);
+                responseModel.EmailAddress = model.EmailAddress; // Ensure this is set properly
+
+                return CreatedAtAction(nameof(GetReservationById), new { id = createdReservation.ReservationId }, responseModel);
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating reservation.");
-                return BadRequest("Error creating reservation.");
+                return StatusCode(500, "An error occurred while creating the reservation.");
             }
-        }
-
-
-        // GET: api/Reservations
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Reservation>>> GetReservations()
-        {
-            return Ok(await _reservationService.GetAllReservationsAsync());
         }
 
         // GET: api/Reservations/{id}
@@ -63,39 +64,36 @@ namespace RestaurantBackend.Controllers
             var reservation = await _reservationService.GetReservationByIdAsync(id);
             if (reservation == null)
             {
-                _logger.LogWarning("Reservation with ID {Id} not found.", id);
+                _logger.LogWarning($"Reservation with ID {id} not found.");
                 return NotFound();
             }
-            return Ok(reservation);
+            return Ok(_mapper.Map<ReservationVM>(reservation));
         }
 
         // PUT: api/Reservations/{id}
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateReservation(int id, [FromBody] Reservation reservation)
+        public async Task<IActionResult> UpdateReservation(int id, [FromBody] ReservationVM model)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            if (id != reservation.ReservationId)
+            if (id != model.ReservationId)
             {
                 return BadRequest("Mismatched reservation ID.");
             }
 
             try
             {
+                var reservation = _mapper.Map<Reservation>(model);
                 await _reservationService.UpdateReservationAsync(reservation);
                 return NoContent();
             }
-            catch (KeyNotFoundException)
-            {
-                return NotFound($"Reservation with ID {id} not found.");
-            }
             catch (System.Exception ex)
             {
-                _logger.LogError("Error updating reservation: {ExceptionMessage}", ex.Message);
-                return BadRequest("Error updating reservation.");
+                _logger.LogError(ex, "Error updating reservation.");
+                return StatusCode(500, "An error occurred while updating the reservation.");
             }
         }
 
@@ -108,8 +106,9 @@ namespace RestaurantBackend.Controllers
                 await _reservationService.CancelReservationAsync(id);
                 return NoContent();
             }
-            catch (KeyNotFoundException)
+            catch (System.Exception ex)
             {
+                _logger.LogError(ex, $"Error deleting reservation with ID {id}.");
                 return NotFound($"Reservation with ID {id} not found.");
             }
         }

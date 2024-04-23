@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Identity;
 using RestaurantBackend.Validation;
 
 namespace RestaurantBackend.Models
@@ -12,27 +13,17 @@ namespace RestaurantBackend.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int ReservationId { get; set; }
 
-        [Required]
-        [CustomValidation(typeof(ReservationValidator), nameof(ReservationValidator.ValidateReservationTime))]
-        public DateTime ReservationTime { get; set; }
-        
-        public DateTime ReservationEndTime { get; set; }
-
-        // [Required]
-        // public int TableId { get; set; }
+        [Required, CustomValidation(typeof(ReservationValidator), nameof(ReservationValidator.ValidateReservationTime))]
+        public DateTime ReservationTime { get; set; } 
 
         [Required]
-        public int CustomerId { get; set; }
+        public string UserId { get; set; } = string.Empty;
 
         [Required]
         public int NumberOfGuests { get; set; }
 
-        // Navigation properties
-        
-        [ForeignKey("CustomerId")]
-        public virtual Customer Customer { get; set; }
-
-        // public virtual Table Table { get; set; }
-
+        // Navigation property
+        [ForeignKey("UserId")]
+        public virtual IdentityUser User { get; set; }
     }
 }

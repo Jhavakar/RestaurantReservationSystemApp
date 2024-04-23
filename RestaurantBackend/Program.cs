@@ -8,6 +8,7 @@ using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
+using RestaurantBackend.Models;
 using System.Text;
 using AutoMapper;
 using RestaurantBackend.Data;
@@ -24,7 +25,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
-    // If you want to add JWT Authentication to Swagger UI
+    // JWT Authentication for Swagger UI
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         In = ParameterLocation.Header,
@@ -44,7 +45,7 @@ builder.Services.AddSwaggerGen(c =>
                     Id = "Bearer"
                 }
             },
-            Array.Empty<string>()
+            new string[] {}
         }
     });
 });
@@ -54,12 +55,22 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("SQLiteConnection")));
 
 // Adding Identity
-builder.Services.AddIdentity<IdentityUser, IdentityRole>()
-        .AddEntityFrameworkStores<ApplicationDbContext>()
-        .AddDefaultTokenProviders();
+builder.Services.AddIdentity<Customer, IdentityRole>(options =>
+    {
+        // Configure password complexity here
+        options.Password.RequireDigit = true;
+        options.Password.RequireLowercase = true;
+        options.Password.RequireNonAlphanumeric = true;
+        options.Password.RequireUppercase = true;
+        options.Password.RequiredLength = 8;  // Changed from 6 to 8 for better security
+    })
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders();
+
 
 // AutoMapper configuration
-builder.Services.AddAutoMapper(typeof(Program));
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
 // Configuration for AppSettings (for JWT settings, etc.)
 builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("AppSettings"));
@@ -67,7 +78,6 @@ builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("AppSet
 // Adding scoped services for business logic
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<IReservationService, ReservationService>();
-// builder.Services.AddScoped<ITableService, TableService>();
 
 // JWT Authentication setup
 var appSettingsSection = builder.Configuration.GetSection("AppSettings");
@@ -88,8 +98,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 // CORS configuration to allow requests from a specific origin
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("CorsPolicy", builder =>
-        builder.WithOrigins("http://localhost:4200")
+    options.AddPolicy("CorsPolicy", policy =>
+        policy.WithOrigins("http://localhost:4200")
                .AllowAnyMethod()
                .AllowAnyHeader()
                .AllowCredentials());
@@ -103,6 +113,8 @@ if (app.Environment.IsDevelopment())
     app.UseDeveloperExceptionPage();
     app.UseSwagger();
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1"));
+    
+    InitializeDatabase(app); // Initialize the database at startup in Development environment
 }
 
 app.UseHttpsRedirection();
@@ -115,3 +127,14 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+void InitializeDatabase(IApplicationBuilder app)
+{
+    using (var scope = app.ApplicationServices.CreateScope())
+    {
+        var services = scope.ServiceProvider;
+        var dbContext = services.GetRequiredService<ApplicationDbContext>();
+        dbContext.Database.EnsureDeleted();
+        dbContext.Database.EnsureCreated();
+    }
+}

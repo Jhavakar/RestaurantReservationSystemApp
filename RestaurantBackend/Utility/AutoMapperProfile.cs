@@ -8,7 +8,10 @@ namespace RestaurantBackend.Utility
     {
         public AutoMapperProfile()
         {
-            CreateMap<Customer, CustomerVM>().ReverseMap();
+            CreateMap<Customer, CustomerVM>()
+            .ForMember(dest => dest.EmailAddress, opt => opt.MapFrom(src => src.Email))
+            .ReverseMap();
+            CreateMap<Reservation, ReservationVM>().ReverseMap();
         }
     }
 }

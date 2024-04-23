@@ -1,18 +1,9 @@
 using System;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using RestaurantBackend.Models;
 using RestaurantBackend.Services;
-using RestaurantBackend.Utility;
 using RestaurantBackend.ViewModels;
 
 namespace RestaurantBackend.Controllers
@@ -34,98 +25,132 @@ namespace RestaurantBackend.Controllers
 
         // POST: api/Customer
         [HttpPost]
-        public async Task<ActionResult<CustomerVM>> CreateCustomer([FromBody] CustomerVM customerVM)
+        public async Task<IActionResult> CreateCustomer([FromBody] CustomerVM model)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState); // Correct variable reference
-            }
-
-            try
-            {
-                var customer = _mapper.Map<Customer>(customerVM); // Map to your entity model
-                var newCustomer = await _customerService.AddCustomerAsync(customer); // Use correct method name and await its result
-                var newCustomerVM = _mapper.Map<CustomerVM>(newCustomer); // Optionally map back to VM if needed
-
-                // Return a reference to the created entity
-                return CreatedAtAction(nameof(GetCustomer), new { id = newCustomerVM.CustomerId }, newCustomerVM);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Unexpected error occurred during registration.");
-                return StatusCode(500, "An unexpected error occurred. Please try again later.");
-            }
-        }
-
-        // GET: api/Customer
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<CustomerVM>>> GetAllCustomers()
-        {
-            var customers = await _customerService.GetAllCustomersAsync();
-            return _mapper.Map<List<CustomerVM>>(customers);
-        }
-
-        // GET: api/Customer/{id}
-        [HttpGet("{id}")]
-        public async Task<ActionResult<CustomerVM>> GetCustomer(int id)
-        {
-            try
-            {
-                var customer = await _customerService.GetCustomerByIdAsync(id);
-
-                if (customer == null)
-                {
-                    _logger.LogWarning($"Customer with ID {id} not found.");
-                    return NotFound();
-                }
-
-                return _mapper.Map<CustomerVM>(customer);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"An error occurred while retrieving customer with ID {id}.");
-                throw;
-            }
-        }
-
-        // PUT: api/Customer/{id}
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateCustomer(int id, [FromBody] CustomerVM customerVM)
-        {
-            if (id != customerVM.CustomerId)
-            {
-                return BadRequest("ID mismatch");
-            }
-
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var existingCustomer = await _customerService.GetCustomerByIdAsync(id);
-            if (existingCustomer == null)
+            try
+            {
+                var customer = _mapper.Map<Customer>(model); 
+                var result = await _customerService.CreateCustomerAsync(model); 
+
+                if (result.Succeeded)
+                {
+                    var createdCustomerVM = _mapper.Map<CustomerVM>(customer);
+                    return CreatedAtAction(nameof(GetCustomer), new { id = customer.Id }, createdCustomerVM);
+                }
+                else
+                {
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.AddModelError("", error.Description);
+                    }
+                    return BadRequest(ModelState);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to create customer.");
+                return StatusCode(500, "Internal server error while creating customer.");
+            }
+        }
+
+        // GET: api/Customer/{id}
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetCustomer(string id)
+        {
+            var customer = await _customerService.GetCustomerByIdAsync(id);
+            if (customer == null)
             {
                 return NotFound($"Customer with ID {id} not found.");
             }
+            return Ok(customer);
+        }
+        
+        // PUT: api/Customer/{id}
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateCustomer(string id, [FromBody] CustomerVM model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
-            // If the customer exists, map the updated fields from customerVM to the existing customer
-            _mapper.Map(customerVM, existingCustomer);
+            try
+            {
+                var result = await _customerService.UpdateCustomerAsync(id, model);
 
-            // Update the customer using the service
-            var updatedCustomer = await _customerService.UpdateCustomerAsync(existingCustomer);
-
-            // Optionally, map the updated customer back to a CustomerVM to return to the client
-            var updatedCustomerVM = _mapper.Map<CustomerVM>(updatedCustomer);
-
-            return Ok(updatedCustomerVM); // Or return NoContent() if you prefer not to return the updated entity
+                if (result.Succeeded)
+                {
+                    _logger.LogInformation($"Customer with ID {id} updated successfully.");
+                    return NoContent(); // 204 No Content is typically returned when an update operation successfully completes.
+                }
+                else
+                {
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.AddModelError("", error.Description);
+                    }
+                    return BadRequest(ModelState);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error updating customer with ID {id}.");
+                return StatusCode(500, "Internal server error while updating customer.");
+            }
         }
 
         // DELETE: api/Customer/{id}
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteCustomer(int id)
+        public async Task<IActionResult> DeleteCustomer(string id)
         {
-            await _customerService.DeleteCustomerAsync(id);
-            return NoContent();
+            try
+            {
+                var result = await _customerService.DeleteCustomerAsync(id);
+
+                if (result.Succeeded)
+                {
+                    _logger.LogInformation($"Customer with ID {id} deleted successfully.");
+                    return NoContent(); // 204 No Content is a common response for successful DELETE operations.
+                }
+                else
+                {
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.AddModelError("", error.Description);
+                    }
+                    return BadRequest(ModelState);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error deleting customer with ID {id}.");
+                return StatusCode(500, "Internal server error while deleting customer.");
+            }
         }
-    }
+
+        [HttpPost("updatePassword/{userId}")]
+        public async Task<IActionResult> UpdatePassword(string userId, [FromBody] string newPassword)
+        {
+            if (string.IsNullOrWhiteSpace(newPassword))
+            {
+                return BadRequest("New password is required");
+            }
+
+            var result = await _customerService.UpdatePasswordAsync(userId, newPassword);
+            if (result.Succeeded)
+            {
+                return Ok("Password updated successfully.");
+            }
+            else
+            {
+                return BadRequest(result.Errors);
+            }
+        }
+
+   }
 }
