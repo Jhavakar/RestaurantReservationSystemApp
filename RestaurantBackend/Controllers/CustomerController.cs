@@ -134,21 +134,21 @@ namespace RestaurantBackend.Controllers
         }
 
         [HttpPost("updatePassword/{userId}")]
-        public async Task<IActionResult> UpdatePassword(string userId, [FromBody] string newPassword)
+        public async Task<IActionResult> UpdatePassword(string userId, [FromBody] UpdatePasswordModel model)
         {
-            if (string.IsNullOrWhiteSpace(newPassword))
+            if (string.IsNullOrWhiteSpace(model.CurrentPassword) || string.IsNullOrWhiteSpace(model.NewPassword))
             {
-                return BadRequest("New password is required");
+                return BadRequest("Both current and new passwords are required.");
             }
 
-            var result = await _customerService.UpdatePasswordAsync(userId, newPassword);
+            var result = await _customerService.UpdatePasswordAsync(userId, model.CurrentPassword, model.NewPassword);
             if (result.Succeeded)
             {
                 return Ok("Password updated successfully.");
             }
             else
             {
-                return BadRequest(result.Errors);
+                return BadRequest(result.Errors.Select(e => e.Description));
             }
         }
 

@@ -10,32 +10,35 @@ import { LoginModel } from '../../models/login.model';
   styleUrls: ['./login.component.css'],
   imports: [ReactiveFormsModule],
 })
+
 export class LoginComponent {
   loginForm = new FormGroup({
     emailAddress: new FormControl('', [Validators.required, Validators.email]),
     password: new FormControl('', [Validators.required])
-  });
+});
 
   constructor(
     private authService: AuthService,
     private router: Router,
     ) { }
 
-  isLoading = false;
-
   login(): void {
     if (this.loginForm.valid) {
-      this.isLoading = true; 
-      this.authService.login(this.loginForm.value as LoginModel).subscribe({
-        next: (resp) => {
-          this.isLoading = false; 
-          this.router.navigate(['/reserve']);
-        },
-        error: (error) => {
-          this.isLoading = false; 
-          // Handle error
-        }
-      });
+        // Explicitly create an object that matches the LoginModel interface
+        const credentials: LoginModel = {
+          emailAddress: this.loginForm.get('emailAddress')?.value || '',
+          password: this.loginForm.get('password')?.value || ''
+        };
+
+        this.authService.login(credentials.emailAddress, credentials.password).subscribe({
+            next: () => {
+                // Handle successful authentication
+            },
+            error: (error) => {
+                console.error('Login failed:', error);
+                // Optionally show an error message to the user
+            }
+        });
     }
 }
 

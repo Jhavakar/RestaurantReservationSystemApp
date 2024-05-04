@@ -1,9 +1,10 @@
-// app.component.ts
 import { Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
-import { CustomersComponent } from './customers/customers.component'; // Adjust path as necessary
-import { ReservationFormComponent } from './reservation-form/reservation-form.component'; // Adjust path as necessary
+import { CustomersComponent } from './customers/customers.component'; 
+import { ReservationFormComponent } from './reservation-form/reservation-form.component'; 
+import { UpdatePasswordComponent } from './pages/update-password/update-password.component';
+import { ResetPasswordComponent } from './reset-password/reset-password.component';
 import { LoginComponent } from './pages/login/login.component';
 import { AuthInterceptor } from './interceptor/auth.interceptors.service';
 import { AuthService } from './services/auth.service';
@@ -19,7 +20,8 @@ import { AuthService } from './services/auth.service';
     CustomersComponent,
     ReservationFormComponent,
     LoginComponent,
-    // Include other standalone components or necessary modules here
+    UpdatePasswordComponent,
+    ResetPasswordComponent,
   ],
   providers: [
     AuthService,

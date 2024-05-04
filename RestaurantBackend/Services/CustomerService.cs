@@ -18,18 +18,21 @@ namespace RestaurantBackend.Services
         Task<IdentityResult> DeleteCustomerAsync(string customerId);
         Task<CustomerVM> GetCustomerByIdAsync(string customerId);
         Task<CustomerVM> GetCustomerByEmailAsync(string email);
-        Task<IdentityResult> UpdatePasswordAsync(string userId, string newPassword);
+        Task<IdentityResult> UpdatePasswordAsync(string userId, string currentPassword, string newPassword);
+
     }
 
     public class CustomerService : ICustomerService
     {
         private readonly UserManager<Customer> _userManager;
         private readonly ILogger<CustomerService> _logger;
+        private readonly IPasswordService _passwordService;
 
-        public CustomerService(UserManager<Customer> userManager, ILogger<CustomerService> logger)
+        public CustomerService(UserManager<Customer> userManager, ILogger<CustomerService> logger, IPasswordService passwordService)
         {
             _userManager = userManager;
             _logger = logger;
+            _passwordService = passwordService;
         }
 
         public async Task<IdentityResult> CreateCustomerAsync(CustomerVM model)
@@ -37,7 +40,7 @@ namespace RestaurantBackend.Services
             var customer = new Customer
             {
                 Email = model.EmailAddress,
-                UserName = model.EmailAddress, // Ensure this is not null or empty
+                UserName = model.EmailAddress,
                 FirstName = model.FirstName,
                 LastName = model.LastName,
                 PhoneNumber = model.PhoneNumber
@@ -77,7 +80,7 @@ namespace RestaurantBackend.Services
             customer.FirstName = model.FirstName;
             customer.LastName = model.LastName;
             customer.PhoneNumber = model.PhoneNumber;
-            customer.Email = model.EmailAddress;  // Update email if needed, consider implications for login
+            customer.Email = model.EmailAddress; 
 
             var result = await _userManager.UpdateAsync(customer);
             if (result.Succeeded)
@@ -154,26 +157,24 @@ namespace RestaurantBackend.Services
             };
         }
  
-        public async Task<IdentityResult> UpdatePasswordAsync(string userId, string newPassword)
+        public async Task<IdentityResult> UpdatePasswordAsync(string userId, string currentPassword, string newPassword)
         {
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user == null)
+            var customer = await _userManager.FindByIdAsync(userId);
+            if (customer == null)
             {
-                _logger.LogError($"User with ID {userId} not found.");
-                return IdentityResult.Failed(new IdentityError { Description = "User not found" });
+                _logger.LogError("User not found.");
+                return IdentityResult.Failed(new IdentityError { Description = "User not found2" });
             }
 
-            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-            var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
-            if (result.Succeeded)
+            // This checks if the current password is correct
+            var checkPassword = await _userManager.CheckPasswordAsync(customer, currentPassword);
+            if (!checkPassword)
             {
-                // Assuming temporary password logic needs to be handled
-                user.TemporaryPassword = newPassword; // Consider hashing if storing temporarily
-                user.TemporaryPasswordExpiration = DateTime.UtcNow.AddDays(7); // Set the expiration time
-                await _userManager.UpdateAsync(user);
+                return IdentityResult.Failed(new IdentityError { Description = "Invalid current password" });
             }
 
-            return result;
+            // If the current password is correct, proceed to update to the new password
+            return await _userManager.ChangePasswordAsync(customer, currentPassword, newPassword);
         }
 
     }

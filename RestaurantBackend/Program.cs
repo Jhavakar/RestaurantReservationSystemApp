@@ -7,6 +7,10 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.Tokens;
 using RestaurantBackend.Models;
 using System.Text;
@@ -20,6 +24,11 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+ 
+// Adding HttpContextAccessor and MVC
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddMvc();
+builder.Services.AddSingleton<IUrlHelperFactory, UrlHelperFactory>();
 
 // Configuring Swagger
 builder.Services.AddSwaggerGen(c =>
@@ -78,6 +87,7 @@ builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("AppSet
 // Adding scoped services for business logic
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<IReservationService, ReservationService>();
+builder.Services.AddScoped<IPasswordService, PasswordService>();
 
 // JWT Authentication setup
 var appSettingsSection = builder.Configuration.GetSection("AppSettings");

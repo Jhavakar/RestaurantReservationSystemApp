@@ -14,14 +14,14 @@ if (environment.production) {
 
 bootstrapApplication(AppComponent, {
   providers: [
-    importProvidersFrom(
-      HttpClientModule,
-      RouterModule.forRoot(routes)
-    ),
-    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
-
-    // If you need to use fetch API specifically, uncomment the next line
-    // provideHttpClient(withFetch()),
-  ],
-  
+      importProvidersFrom(
+          HttpClientModule,
+          RouterModule.forRoot(routes)
+      ),
+      {
+          provide: HTTP_INTERCEPTORS,
+          useClass: AuthInterceptor,
+          multi: true
+      }
+  ]
 }).catch(err => console.error(err));
