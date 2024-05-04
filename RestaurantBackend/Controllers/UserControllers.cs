@@ -9,7 +9,6 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using RestaurantBackend.ViewModels;
 
 [ApiController]
 [Route("api/[controller]")]

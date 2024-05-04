@@ -7,18 +7,18 @@ public class CustomerVM
     // public string Id { get; set; }
 
     [Required, MaxLength(50)]
-    public string FirstName { get; set; }
+    public string FirstName { get; set; } = string.Empty;
 
     [Required, MaxLength(50)]
-    public string LastName { get; set; }
+    public string LastName { get; set; } = string.Empty;
 
     [Required, EmailAddress]
-    public string EmailAddress { get; set; }
+    public string EmailAddress { get; set; } = string.Empty;
 
     [Phone]
-    public string PhoneNumber { get; set; }
+    public string PhoneNumber { get; set; } = string.Empty;
 
     // Add a Password field if this VM is used for creating new users
     [Required, DataType(DataType.Password)]
-    public string Password { get; set; }
+    public string Password { get; set; } = string.Empty;
 }

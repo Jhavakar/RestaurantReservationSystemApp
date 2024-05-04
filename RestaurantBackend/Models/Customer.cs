@@ -15,7 +15,7 @@ namespace RestaurantBackend.Models
         public string LastName { get; set; } = string.Empty;
 
         // Custom properties specific to your application
-        public string TemporaryPassword { get; set; }
+        public string TemporaryPassword { get; set; } = string.Empty;
         public DateTime? TemporaryPasswordExpiration { get; set; }
 
 
