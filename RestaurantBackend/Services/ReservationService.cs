@@ -184,20 +184,6 @@ namespace RestaurantBackend.Services
             }
         
         }
-
-        // public async Task<string> GenerateTemporaryPassword(int length = 8)
-        // {
-        //     const string validChars = "ABCDEFGHJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-        //     using var rng = RandomNumberGenerator.Create(); // Correct usage of RandomNumberGenerator
-        //     var bytes = new byte[length];
-        //     rng.GetBytes(bytes);
-        //     var chars = new char[length];
-        //     for (int i = 0; i < length; i++)
-        //     {
-        //         chars[i] = validChars[bytes[i] % validChars.Length];
-        //     }
-        //     return new string(chars);
-        // }
     
     }
 }

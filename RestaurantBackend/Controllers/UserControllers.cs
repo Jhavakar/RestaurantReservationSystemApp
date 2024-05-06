@@ -1,14 +1,18 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using RestaurantBackend.Models;
 using RestaurantBackend.Services;
+using RestaurantBackend.Utility;
 using RestaurantBackend.ViewModels;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -17,34 +21,43 @@ public class UsersController : ControllerBase
     private readonly IConfiguration _configuration;
     private readonly UserManager<Customer> _userManager;
     private readonly SignInManager<Customer> _signInManager;
+    private readonly AppSettings _appSettings;
     
     
-    public UsersController(IConfiguration configuration, UserManager<Customer> userManager, SignInManager<Customer> signInManager)
+    public UsersController(IConfiguration configuration, UserManager<Customer> userManager, 
+        SignInManager<Customer> signInManager, IOptions<AppSettings> appSettings)
     {
         _configuration = configuration;
         _userManager = userManager;
         _signInManager = signInManager;
+        _appSettings = appSettings.Value;
     }
 
-    // [HttpPost("login")]
-    // public async Task<IActionResult> Login([FromBody] LoginVM loginVM)
-    // {
-    //     var user = await _userManager.FindByEmailAsync(loginVM.EmailAddress);
-    //     if (user != null && await _userManager.CheckPasswordAsync(user, loginVM.Password))
-    //     {
-    //         var token = GenerateJwtToken(user);  // Generate the JWT token for the user
-    //         var cookieOptions = new CookieOptions
-    //         {
-    //             HttpOnly = true,
-    //             Expires = DateTime.Now.AddHours(24),
-    //             Secure = true,
-    //             SameSite = SameSiteMode.Strict
-    //         };
-    //         Response.Cookies.Append("auth_token", token, cookieOptions);
-    //         return Ok(new { message = "Login successful" });
-    //     }
-    //     return Unauthorized("Invalid login attempt.");
-    // }
+    [HttpPost("login")]
+    public async Task<IActionResult> Login([FromBody] LoginVM loginVM)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var user = await _userManager.FindByEmailAsync(loginVM.EmailAddress);
+        if (user == null)
+        {
+            return Unauthorized("User not found.");
+        }
+
+        // Check if the password is correct
+        var result = await _signInManager.PasswordSignInAsync(user, loginVM.Password, isPersistent: false, lockoutOnFailure: false);
+        if (!result.Succeeded)
+        {
+            return Unauthorized("Invalid login attempt.");
+        }
+
+        // Generate JWT token
+        var token = GenerateJwtToken(user);
+        return Ok(new { success = true, token });
+    }
 
     // [HttpPost("logout")]
     // public IActionResult Logout()
@@ -55,21 +68,27 @@ public class UsersController : ControllerBase
 
     private string GenerateJwtToken(IdentityUser user)
     {
-        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+        var key = _appSettings.Secret ?? throw new InvalidOperationException("JWT Secret is not configured.");
+        if (key.Length < 32)
+        {
+            throw new InvalidOperationException("JWT Secret must be at least 32 characters long.");
+        }
+
+        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
         var claims = new[]
         {
-            new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
-            new Claim(JwtRegisteredClaimNames.Email, user.Email),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim(JwtRegisteredClaimNames.Sub, user.UserName ?? "unknown_user"),
+            new Claim(JwtRegisteredClaimNames.Email, user.Email ?? "no-email@example.com"),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
         var tokenDescriptor = new JwtSecurityToken(
-            issuer: _configuration["Jwt:Issuer"],
-            audience: _configuration["Jwt:Audience"],
+            issuer: _appSettings.Issuer,
+            audience: _appSettings.Audience,
             claims: claims,
-            expires: DateTime.Now.AddHours(3),
+            expires: DateTime.Now.AddHours(24),
             signingCredentials: credentials);
 
         return new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);

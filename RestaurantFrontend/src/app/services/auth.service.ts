@@ -6,9 +6,6 @@ import { catchError, tap } from 'rxjs/operators';
 import { LoginModel } from '../models/login.model';
 import { ResetPasswordModel } from '../models/reset-password.model';
 
-interface LoginResponse {
-  token: string;
-}
 
 @Injectable({
   providedIn: 'root'
@@ -30,24 +27,18 @@ export class AuthService {
   
   login(email: string, password: string): Observable<any> {
     const loginData: LoginModel = { emailAddress: email, password: password };
-    return this.http.post<{ token: string, isTempPassword: boolean }>(
-      `${this.apiUrl}/login`, loginData
-    ).pipe(
-      tap(response => {
-        localStorage.setItem('auth_token', response.token);
-        if (response.isTempPassword) {
-          this.router.navigate(['/update-password']);
-        } else {
-          this.router.navigate(['/dashboard']);
-        }
-      }),
+    return this.http.post<{ token: string }>(`${this.apiUrl}/Users/login`, loginData)
+      .pipe(
+        tap(response => {
+          localStorage.setItem('auth_token', response.token);
+          this.router.navigate(['/customers']); // Ensure correct routing
+        }),
         catchError(error => {
-            console.error('Login failed:', error);
-            return throwError(() => new Error('Login failed'));
+          console.error('Login failed:', error);
+          return throwError(() => new Error('Login failed'));
         })
-    );
-    
-}
+      );
+  }
 
   // Method to log in and store the JWT token
   // login(credentials: LoginModel): Observable<LoginResponse> {

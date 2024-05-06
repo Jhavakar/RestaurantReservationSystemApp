@@ -91,7 +91,17 @@ builder.Services.AddScoped<IPasswordService, PasswordService>();
 
 // JWT Authentication setup
 var appSettingsSection = builder.Configuration.GetSection("AppSettings");
+builder.Services.Configure<AppSettings>(appSettingsSection);
+
+// Fetch the `AppSettings` object for immediate use
 var appSettings = appSettingsSection.Get<AppSettings>();
+
+if (appSettings == null || string.IsNullOrWhiteSpace(appSettings.Secret))
+{
+    throw new InvalidOperationException("JWT Key is not configured.");
+}
+
+// Now, you can use `appSettings.Secret` for encoding
 var key = Encoding.ASCII.GetBytes(appSettings.Secret);
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>

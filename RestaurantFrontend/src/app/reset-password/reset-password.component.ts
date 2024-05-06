@@ -54,7 +54,7 @@ export class ResetPasswordComponent {
         if (response.success) {
           alert('Password reset successful');
           console.log('Reset password response:', response);
-          this.router.navigate(['/login']);
+          this.router.navigate(['/login'], { queryParams: { email: formData.email } });
         } else {
           alert('Failed to reset password. Please try again.');
         }

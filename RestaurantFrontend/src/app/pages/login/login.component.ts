@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { LoginModel } from '../../models/login.model';
+
 @Component({
   selector: 'app-login',
   standalone: true,
@@ -20,6 +21,7 @@ export class LoginComponent {
   constructor(
     private authService: AuthService,
     private router: Router,
+    private route: ActivatedRoute,
     ) { }
 
   login(): void {
@@ -31,13 +33,14 @@ export class LoginComponent {
         };
 
         this.authService.login(credentials.emailAddress, credentials.password).subscribe({
-            next: () => {
-                // Handle successful authentication
-            },
-            error: (error) => {
-                console.error('Login failed:', error);
-                // Optionally show an error message to the user
-            }
+          next: (response) => {
+            this.router.navigate(['/customers']);
+            console.log('Navigated to:', response);
+
+          },
+          error: (error) => {
+            console.error('Login failed:', error);
+          }
         });
     }
 }

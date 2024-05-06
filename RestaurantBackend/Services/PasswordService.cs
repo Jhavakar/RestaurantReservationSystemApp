@@ -14,8 +14,7 @@ namespace RestaurantBackend.Services
 {
     public interface IPasswordService
     {
-        // Task<string> GenerateTemporaryPasswordAsync(int length = 8);
-        // Task<IdentityResult> AddPasswordAsync(Customer customer, string newPassword);
+
         Task<IdentityResult> ChangePasswordAsync(Customer Customer, string currentPassword, string newPassword);
         Task<IdentityResult> ResetPasswordAsync(string userId, string token, string newPassword);
     }
@@ -30,42 +29,6 @@ namespace RestaurantBackend.Services
             _userManager = userManager;
             _logger = logger;
         }
-
-        // public async Task<string> GenerateTemporaryPasswordAsync(int length = 8)
-        // {
-        //     const string validChars = "ABCDEFGHJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-        //     using var rng = RandomNumberGenerator.Create();
-        //     var bytes = new byte[length];
-        //     rng.GetBytes(bytes);
-        //     var chars = new char[length];
-        //     for (int i = 0; i < length; i++)
-        //     {
-        //         chars[i] = validChars[bytes[i] % validChars.Length];
-        //     }
-        //     return new string(chars);
-        // }
-
-        // public async Task<IdentityResult> AddPasswordAsync(Customer customer, string newPassword)
-        // {
-        //     if (customer == null)
-        //     {
-        //         _logger.LogError("Cannot add password, user is null.");
-        //         return IdentityResult.Failed(new IdentityError { Description = "User is null" });
-        //     }
-
-        //     if (string.IsNullOrWhiteSpace(newPassword))
-        //     {
-        //         _logger.LogError("Cannot add password, password is null or empty.");
-        //         return IdentityResult.Failed(new IdentityError { Description = "Password is null or empty" });
-        //     }
-
-        //     var result = await _userManager.AddPasswordAsync(customer, newPassword);
-        //     if (!result.Succeeded)
-        //     {
-        //         _logger.LogError($"Failed to add password for user {customer.UserName}");
-        //     }
-        //     return result;
-        // }
 
         public async Task<IdentityResult> ChangePasswordAsync(Customer customer, string currentPassword, string newPassword)
         {
