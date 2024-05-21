@@ -34,7 +34,7 @@ export class LoginComponent {
 
         this.authService.login(credentials.emailAddress, credentials.password).subscribe({
           next: (response) => {
-            this.router.navigate(['/customers']);
+            this.router.navigate(['/reservation-form']);
             console.log('Navigated to:', response);
 
           },

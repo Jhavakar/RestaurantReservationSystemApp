@@ -24,20 +24,6 @@ export class ReservationFormComponent {
     });
   }
 
-  // onSubmit() {
-  //   if (this.reservationForm.valid) {
-  //     this.reservationService.createReservation(this.reservationForm.value).subscribe({
-  //       next: (reservation) => {
-  //         console.log('Reservation created', reservation);
-  //         this.reservationForm.reset();
-  //       },
-  //       error: (error) => console.error('There was an error!', error)
-  //     });
-  //   } else {
-  //     console.error('Form is not valid');
-  //   }
-  // }
-
   onSubmit(): void {
     if (this.reservationForm.valid) {
       this.showConfirmation = true; // Move to the confirmation view

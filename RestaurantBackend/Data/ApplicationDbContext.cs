@@ -29,10 +29,11 @@ namespace RestaurantBackend.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // modelBuilder.Entity<Reservation>()
-            // .HasOne(r => r.Payment) 
-            // .WithOne(p => p.Reservation) 
-            // .HasForeignKey<Payment>(p => p.ReservationId); 
+            modelBuilder.Entity<Reservation>()
+                .HasOne(r => r.User)
+                .WithMany()
+                .HasForeignKey(r => r.UserId)
+                .IsRequired();
 
             // Fluent API configurations go here
             // Example: modelBuilder.Entity<Reservation>().HasKey(r => r.ReservationId);

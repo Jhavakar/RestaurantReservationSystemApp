@@ -1,0 +1,53 @@
+<!-- reservation-overview.component.html -->
+<div class="container my-5">
+  <header class="mb-4">
+    <h1 class="display-4">Welcome back!</h1>
+    <p>Your reservation details are below:</p>
+  </header>
+
+  <!-- Reservation Details for each reservation -->
+  <div *ngFor="let reservation of reservations" class="card mb-4">
+    <div class="card-body">
+      <h2 class="card-title">Reservation Summary</h2>
+      <ul *ngIf="!editingStates[reservation.reservationId]" class="list-group">
+        <li class="list-group-item">First Name: {{ reservation.user.firstName }}</li>
+        <li class="list-group-item">Last Name: {{ reservation.user.lastName }}</li>
+        <li class="list-group-item"><strong>Date and Time:</strong> {{ reservation.reservationTime | date: 'short' }}</li>
+        <li class="list-group-item"><strong>Number of Guests:</strong> {{ reservation.numberOfGuests }}</li>
+      </ul>
+
+      <!-- Editable Form -->
+      <form *ngIf="editingStates[reservation.reservationId]" [formGroup]="editForms[reservation.reservationId]" (ngSubmit)="updateReservation(reservation.reservationId)">
+        <div class="form-group">
+            <label>First Name:</label>
+            <input type="text" class="form-control" formControlName="firstName">
+        </div>
+        <div class="form-group">
+            <label>Last Name:</label>
+            <input type="text" class="form-control" formControlName="lastName">
+        </div>
+        <div class="form-group">
+            <label>Email Address:</label>
+            <input type="email" class="form-control" formControlName="email"> 
+        </div>
+        <div class="form-group">
+            <label>Date and Time:</label>
+            <input type="datetime-local" class="form-control" formControlName="reservationTime">
+        </div>
+        <div class="form-group">
+            <label>Number of Guests:</label>
+            <input type="number" class="form-control" formControlName="numberOfGuests">
+        </div>
+        <button type="submit" class="btn btn-success">Update Reservation</button>
+        <button type="button" class="btn btn-secondary" (click)="cancelEdit(reservation.reservationId)">Cancel</button>
+      </form>
+
+
+      <!-- Actions Panel for Each Reservation -->
+      <div class="actions mb-4">
+        <button *ngIf="!editingStates[reservation.reservationId]" class="btn btn-primary" (click)="editReservation(reservation.reservationId)">Edit Reservation</button>
+        <button class="btn btn-danger" (click)="deleteReservation(reservation.reservationId)">Cancel Reservation</button>
+      </div>
+    </div>
+  </div>
+</div>

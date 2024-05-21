@@ -13,7 +13,7 @@ namespace RestaurantBackend.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int ReservationId { get; set; }
 
-        [Required, CustomValidation(typeof(ReservationValidator), nameof(ReservationValidator.ValidateReservationTime))]
+        [Required, ReservationTimeValidation]
         public DateTime ReservationTime { get; set; } 
 
         [Required]
@@ -24,6 +24,6 @@ namespace RestaurantBackend.Models
 
         // Navigation property
         [ForeignKey("UserId")]
-        public virtual IdentityUser User { get; set; } 
+        public virtual Customer User { get; set; } 
     }
 }

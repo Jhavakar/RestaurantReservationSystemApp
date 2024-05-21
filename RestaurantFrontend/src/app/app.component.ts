@@ -6,6 +6,9 @@ import { ReservationFormComponent } from './reservation-form/reservation-form.co
 import { UpdatePasswordComponent } from './pages/update-password/update-password.component';
 import { ResetPasswordComponent } from './reset-password/reset-password.component';
 import { LoginComponent } from './pages/login/login.component';
+import { ManageReservationComponent } from './manage-reservation/manage-reservation.component';
+import { ReservationOverviewComponent } from './reservation-overview/reservation-overview.component';
+import { EditReservationComponent } from './edit-reservation/edit-reservation.component';
 import { AuthInterceptor } from './interceptor/auth.interceptors.service';
 import { AuthService } from './services/auth.service';
 
@@ -19,9 +22,12 @@ import { AuthService } from './services/auth.service';
     HttpClientModule,
     CustomersComponent,
     ReservationFormComponent,
-    LoginComponent,
     UpdatePasswordComponent,
     ResetPasswordComponent,
+    LoginComponent,
+    ManageReservationComponent,
+    ReservationOverviewComponent,
+    EditReservationComponent,
   ],
   providers: [
     AuthService,

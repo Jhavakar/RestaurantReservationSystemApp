@@ -5,7 +5,9 @@ import { ReservationFormComponent } from './reservation-form/reservation-form.co
 import { LoginComponent } from './pages/login/login.component';
 import { UpdatePasswordComponent } from './pages/update-password/update-password.component';
 import { ResetPasswordComponent } from './reset-password/reset-password.component';
-
+import { ManageReservationComponent } from './manage-reservation/manage-reservation.component';
+import { ReservationOverviewComponent } from './reservation-overview/reservation-overview.component';
+import { EditReservationComponent } from './edit-reservation/edit-reservation.component';
 
 export const routes: Routes = [
   // Uncommenting this route for redirecting to '/customers' by default
@@ -17,6 +19,9 @@ export const routes: Routes = [
   { path: 'login', component: LoginComponent, title: 'Login to Account' },
   { path: 'update-password', component: UpdatePasswordComponent, title: 'Update Password' },
   { path: 'reset-password', component: ResetPasswordComponent, title: 'Reset Password'},
+  { path: 'manage-reservation', component: ManageReservationComponent, title: 'Manage Reservation'},
+  { path: 'reservation-overview', component: ReservationOverviewComponent, title: 'Reservation Overview'},
+  { path: 'edit-reservation', component: EditReservationComponent, title: 'Edit Reservation'},
 
   // Define more routes as needed
 ];

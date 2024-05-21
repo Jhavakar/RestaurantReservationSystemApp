@@ -3,16 +3,25 @@ using System.ComponentModel.DataAnnotations;
 
 namespace RestaurantBackend.Validation
 {
-    public class ReservationValidator
+    public class ReservationTimeValidationAttribute : ValidationAttribute
     {
-        // Assuming the restaurant operates from 12 PM to 11 PM
-        public static ValidationResult ValidateReservationTime(DateTime reservationTime, ValidationContext validationContext)
+        protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {
-            if (reservationTime.TimeOfDay < new TimeSpan(12, 0, 0) || reservationTime.TimeOfDay > new TimeSpan(23, 0, 0))
+            if (value is DateTime reservationTime)
             {
-                return new ValidationResult("Reservation time must be between 12 PM and 11 PM.");
+                // Validate the reservation time between 12 PM and 11 PM
+                TimeSpan openingTime = new TimeSpan(12, 0, 0); // 12:00 PM
+                TimeSpan closingTime = new TimeSpan(23, 0, 0); // 11:00 PM
+
+                if (reservationTime.TimeOfDay < openingTime || reservationTime.TimeOfDay > closingTime)
+                {
+                    return new ValidationResult("Reservation time must be between 12 PM and 11 PM.");
+                }
+
+                return ValidationResult.Success;
             }
-            return ValidationResult.Success;
+
+            return new ValidationResult("Invalid reservation time format.");
         }
     }
 }

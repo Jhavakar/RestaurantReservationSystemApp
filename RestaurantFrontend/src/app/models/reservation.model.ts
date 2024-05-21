@@ -1,4 +1,6 @@
 export interface ReservationModel {
+  user: any;
+  reservationId: number;
   reservationTime: Date; 
   numberOfGuests: number;
   customerId?: number; 

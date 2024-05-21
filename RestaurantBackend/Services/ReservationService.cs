@@ -11,6 +11,7 @@ using RestaurantBackend.Models;
 using RestaurantBackend.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net;
 using System.Net.Mail;
@@ -21,10 +22,11 @@ namespace RestaurantBackend.Services
 {
     public interface IReservationService
     {
-        Task<Reservation> CreateReservationAsync(Reservation reservation, string emailAddress);
+        Task<Reservation> CreateReservationAsync(ReservationVM model);
         Task<bool> UpdateReservationAsync(Reservation reservation);
         Task<bool> CancelReservationAsync(int reservationId);
         Task<Reservation> GetReservationByIdAsync(int reservationId);
+        Task<IEnumerable<Reservation>> GetReservationsByEmailAsync(string email);
         Task<IEnumerable<Reservation>> GetAllReservationsAsync();
         Task SendConfirmationEmail(Customer customer, Reservation reservation); 
         // Task<string> GenerateTemporaryPassword(int length = 8);
@@ -55,30 +57,79 @@ namespace RestaurantBackend.Services
             _urlHelperFactory = urlHelperFactory;
         }
 
-        public async Task<Reservation> CreateReservationAsync(Reservation reservation, string emailAddress)
+        public async Task<Reservation> CreateReservationAsync(ReservationVM model)
         {
-            _logger.LogInformation("Attempting to find or create user for email: {Email}", emailAddress);
-            var user = await _userManager.FindByEmailAsync(emailAddress);
-            if (user == null)
+            _logger.LogInformation("Checking user existence by email: {Email}", model.EmailAddress);
+            var customer = await _userManager.FindByEmailAsync(model.EmailAddress);
+
+            if (customer == null)
             {
-                _logger.LogInformation("No user found for email {Email}, creating new user.", emailAddress);
-                user = new Customer { Email = emailAddress, UserName = emailAddress };
-                var createUserResult = await _userManager.CreateAsync(user);
-                if (!createUserResult.Succeeded)
+                customer = new Customer
                 {
-                    _logger.LogError("Failed to create a new user for the email: {Email}", emailAddress);
+                    UserName = model.EmailAddress, 
+                    Email = model.EmailAddress,
+                    FirstName = model.FirstName,
+                    LastName = model.LastName
+                };
+
+                var result = await _userManager.CreateAsync(customer);
+                if (!result.Succeeded)
+                {
+                    _logger.LogError("Failed to create a new user for the email: {Email}", model.EmailAddress);
                     return null;
                 }
             }
+            else
+            {
+                if (customer.FirstName != model.FirstName || customer.LastName != model.LastName)
+                {
+                    _logger.LogWarning("Name mismatch for email {Email}. Existing records: {ExistingFirstName} {ExistingLastName}, Provided: {ProvidedFirstName} {ProvidedLastName}",
+                        model.EmailAddress, customer.FirstName, customer.LastName, model.FirstName, model.LastName);
 
-            _logger.LogInformation("User created or retrieved with email: {Email}", user.Email);
+                    customer.FirstName = model.FirstName;
+                    customer.LastName = model.LastName;
+                    await _userManager.UpdateAsync(customer);
+                }
+            }
 
-            reservation.UserId = user.Id;
+            // Create the reservation
+            var reservation = new Reservation
+            {
+                UserId = customer.Id,
+                ReservationTime = model.ReservationTime,
+                NumberOfGuests = model.NumberOfGuests
+            };
+
+            // Validate the reservation details
+            var validationContext = new ValidationContext(reservation);
+            var validationResults = new List<ValidationResult>();
+            bool isValid = Validator.TryValidateObject(reservation, validationContext, validationResults, true);
+            if (!isValid)
+            {
+                foreach (var validationResult in validationResults)
+                {
+                    _logger.LogWarning($"Validation error: {validationResult.ErrorMessage}");
+                }
+                return null;
+            }
+
+            // Check if the requested reservation slot is available
+            bool isAvailable = await IsReservationSlotAvailableAsync(reservation.ReservationTime);
+            if (!isAvailable)
+            {
+                _logger.LogWarning("Requested reservation slot is unavailable: {ReservationTime}", reservation.ReservationTime);
+                return null;
+            }
+
             _context.Reservations.Add(reservation);
             await _context.SaveChangesAsync();
 
-            _logger.LogInformation("Sending confirmation email to {Email}", emailAddress);
-            await SendConfirmationEmail(user, reservation);
+            _logger.LogInformation("User created or retrieved with email: {Email}", customer.Email);
+            _logger.LogInformation("Reservation created successfully.");
+
+            // Send confirmation email
+            _logger.LogInformation("Sending confirmation email to {Email}", customer.Email);
+            await SendConfirmationEmail(customer, reservation);
 
             return reservation;
         }
@@ -115,9 +166,28 @@ namespace RestaurantBackend.Services
 
         public async Task<Reservation> GetReservationByIdAsync(int reservationId)
         {
-            return await _context.Reservations.FindAsync(reservationId);
-        }
+            var reservation = await _context.Reservations
+                .Include(r => r.User)
+                .FirstOrDefaultAsync(r => r.ReservationId == reservationId);
 
+            return reservation; // Return the entire reservation object or shape into a view model
+        }
+       
+        public async Task<IEnumerable<Reservation>> GetReservationsByEmailAsync(string email)
+        {
+            // Find the customer first, and then fetch all reservations linked to that customer
+            var customer = await _userManager.FindByEmailAsync(email);
+            if (customer == null)
+            {
+                return Enumerable.Empty<Reservation>();
+            }
+
+            // Fetch all reservations by user/customer ID
+            return await _context.Reservations
+                .Where(r => r.UserId == customer.Id)
+                .ToListAsync();
+        }
+        
         public async Task<IEnumerable<Reservation>> GetAllReservationsAsync()
         {
             try
@@ -129,6 +199,15 @@ namespace RestaurantBackend.Services
                 _logger.LogError(ex, "Failed to retrieve all reservations.");
                 throw; // Rethrow the exception or handle it as needed
             }
+        }
+
+        public async Task<bool> IsReservationSlotAvailableAsync(DateTime desiredReservationTime)
+        {
+            // Check if any existing reservation has the same time
+            bool isAvailable = !await _context.Reservations
+                .AnyAsync(r => r.ReservationTime == desiredReservationTime);
+
+            return isAvailable;
         }
 
         public async Task SendConfirmationEmail(Customer customer, Reservation reservation)
@@ -145,7 +224,7 @@ namespace RestaurantBackend.Services
 
             var tokenEncoded = WebUtility.UrlEncode(token);
             var emailEncoded = WebUtility.UrlEncode(customer.Email);
-            var passwordResetLink = $"{frontendBaseUrl}/reset-password?token={tokenEncoded}&email={emailEncoded}";
+            var passwordResetLink = $"{frontendBaseUrl}/manage-reservation?token={tokenEncoded}&email={emailEncoded}";
 
             _logger.LogInformation($"Password reset link: {passwordResetLink}");
 

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ReservationModel } from '../models/reservation.model'; 
 
@@ -20,9 +20,32 @@ export class ReservationService {
     return this.http.get<ReservationModel>(`${this.apiUrl}/${id}`);
   }
 
+  getReservationsByEmail(email: string): Observable<ReservationModel[]> {
+    return this.http.get<ReservationModel[]>(`${this.apiUrl}/user-reservations?email=${encodeURIComponent(email)}`);
+  }
+
   createReservation(reservation: ReservationModel): Observable<ReservationModel> {
     return this.http.post<ReservationModel>(this.apiUrl, reservation);
   }
 
-  // Implement update and delete methods similarly
+  updateReservation(id: number, reservationData: ReservationModel): Observable<any> {
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json' // Ensures correct content type header
+    });
+  
+    const body = {
+      firstName: reservationData.firstName,
+      lastName: reservationData.lastName,
+      email: reservationData.emailAddress,
+      reservationTime: reservationData.reservationTime,
+      numberOfGuests: reservationData.numberOfGuests
+    };
+  
+    return this.http.put(`${this.apiUrl}/${id}`, body, { headers });
+  }
+  
+
+  deleteReservation(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${id}`);
+  }
 }
