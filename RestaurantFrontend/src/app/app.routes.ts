@@ -4,7 +4,7 @@ import { CustomersComponent } from './customers/customers.component'; // Uncomme
 import { ReservationFormComponent } from './reservation-form/reservation-form.component';
 import { LoginComponent } from './pages/login/login.component';
 import { UpdatePasswordComponent } from './pages/update-password/update-password.component';
-import { ResetPasswordComponent } from './reset-password/reset-password.component';
+import { SetPasswordComponent } from './set-password/set-password.component';
 import { ManageReservationComponent } from './manage-reservation/manage-reservation.component';
 import { ReservationOverviewComponent } from './reservation-overview/reservation-overview.component';
 import { EditReservationComponent } from './edit-reservation/edit-reservation.component';
@@ -18,7 +18,7 @@ export const routes: Routes = [
   { path: 'reserve', component: ReservationFormComponent, title: 'Make a Reservation' },
   { path: 'login', component: LoginComponent, title: 'Login to Account' },
   { path: 'update-password', component: UpdatePasswordComponent, title: 'Update Password' },
-  { path: 'reset-password', component: ResetPasswordComponent, title: 'Reset Password'},
+  { path: 'set-password', component: SetPasswordComponent, title: 'Set Password'},
   { path: 'manage-reservation', component: ManageReservationComponent, title: 'Manage Reservation'},
   { path: 'reservation-overview', component: ReservationOverviewComponent, title: 'Reservation Overview'},
   { path: 'edit-reservation', component: EditReservationComponent, title: 'Edit Reservation'},

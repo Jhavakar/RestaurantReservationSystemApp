@@ -103,7 +103,7 @@ export class ManageReservationComponent implements OnInit {
         token: this.token
     };
 
-    this.authService.resetPassword(formData).subscribe({
+    this.authService.setPassword(formData).subscribe({
         next: (response) => {
             if (response.success) {
                 alert('Password set successfully. Please log in.');

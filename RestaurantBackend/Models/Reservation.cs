@@ -13,17 +13,16 @@ namespace RestaurantBackend.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int ReservationId { get; set; }
 
-        [Required, ReservationTimeValidation]
-        public DateTime ReservationTime { get; set; } 
+        [Required]
+        public DateTime ReservationTime { get; set; }
 
         [Required]
-        public string UserId { get; set; } = string.Empty;
-
-        [Required]
+        [Range(1, int.MaxValue, ErrorMessage = "Number of guests must be at least 1")]
         public int NumberOfGuests { get; set; }
 
-        // Navigation property
-        [ForeignKey("UserId")]
-        public virtual Customer User { get; set; } 
+        [Required]
+        [ForeignKey("User")]
+        public string UserId { get; set; } = string.Empty;
+        public virtual Customer User { get; set; }
     }
 }

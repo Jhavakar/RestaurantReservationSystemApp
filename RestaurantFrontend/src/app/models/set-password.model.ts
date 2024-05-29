@@ -1,4 +1,4 @@
-export interface ResetPasswordModel {
+export interface SetPasswordModel {
     email: string;
     token: string;
     newPassword: string;

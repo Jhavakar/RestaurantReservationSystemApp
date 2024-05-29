@@ -28,20 +28,12 @@ export class ReservationService {
     return this.http.post<ReservationModel>(this.apiUrl, reservation);
   }
 
-  updateReservation(id: number, reservationData: ReservationModel): Observable<any> {
+  updateReservation(id: number, reservation: ReservationModel): Observable<any> {
     const headers = new HttpHeaders({
       'Content-Type': 'application/json' // Ensures correct content type header
     });
-  
-    const body = {
-      firstName: reservationData.firstName,
-      lastName: reservationData.lastName,
-      email: reservationData.emailAddress,
-      reservationTime: reservationData.reservationTime,
-      numberOfGuests: reservationData.numberOfGuests
-    };
-  
-    return this.http.put(`${this.apiUrl}/${id}`, body, { headers });
+
+    return this.http.put(`${this.apiUrl}/${id}`, reservation, { headers });
   }
   
 

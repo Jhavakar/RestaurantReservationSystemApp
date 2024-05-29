@@ -18,9 +18,10 @@ export class ReservationFormComponent {
     this.reservationForm = this.fb.group({
       firstName: ['', Validators.required],
       lastName: ['', Validators.required],
+      emailAddress: ['', [Validators.required, Validators.email]],
+      phoneNumber: [''],
       reservationTime: ['', Validators.required],
       numberOfGuests: ['', [Validators.required, Validators.min(1)]],
-      emailAddress: ['', [Validators.required, Validators.email]],
     });
   }
 

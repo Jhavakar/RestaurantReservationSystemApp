@@ -69,7 +69,8 @@ namespace RestaurantBackend.Services
                     UserName = model.EmailAddress, 
                     Email = model.EmailAddress,
                     FirstName = model.FirstName,
-                    LastName = model.LastName
+                    LastName = model.LastName,
+                    PhoneNumber = model.PhoneNumber // Set the phone number, which might be null
                 };
 
                 var result = await _userManager.CreateAsync(customer);
@@ -81,13 +82,14 @@ namespace RestaurantBackend.Services
             }
             else
             {
-                if (customer.FirstName != model.FirstName || customer.LastName != model.LastName)
+                if (customer.FirstName != model.FirstName || customer.LastName != model.LastName || customer.PhoneNumber != model.PhoneNumber)
                 {
-                    _logger.LogWarning("Name mismatch for email {Email}. Existing records: {ExistingFirstName} {ExistingLastName}, Provided: {ProvidedFirstName} {ProvidedLastName}",
-                        model.EmailAddress, customer.FirstName, customer.LastName, model.FirstName, model.LastName);
+                    _logger.LogWarning("Name mismatch or phone number mismatch for email {Email}. Existing records: {ExistingFirstName} {ExistingLastName} {ExistingPhoneNumber}, Provided: {ProvidedFirstName} {ProvidedLastName} {ProvidedPhoneNumber}",
+                        model.EmailAddress, customer.FirstName, customer.LastName, customer.PhoneNumber, model.FirstName, model.LastName, model.PhoneNumber);
 
                     customer.FirstName = model.FirstName;
                     customer.LastName = model.LastName;
+                    customer.PhoneNumber = model.PhoneNumber; // Update phone number
                     await _userManager.UpdateAsync(customer);
                 }
             }
@@ -136,15 +138,41 @@ namespace RestaurantBackend.Services
 
         public async Task<bool> UpdateReservationAsync(Reservation reservation)
         {
-            var existingReservation = await _context.Reservations.FindAsync(reservation.ReservationId);
+            var existingReservation = await _context.Reservations
+                .Include(r => r.User)
+                .FirstOrDefaultAsync(r => r.ReservationId == reservation.ReservationId);
+                
             if (existingReservation == null)
             {
                 _logger.LogWarning("Reservation with ID {id} not found for update.", reservation.ReservationId);
                 return false;
             }
 
-            _context.Entry(existingReservation).CurrentValues.SetValues(reservation);
+            // Update user details if they have changed
+            var customer = existingReservation.User;
+            if (customer == null)
+            {
+                _logger.LogWarning("Customer not found for reservation ID {id}.", reservation.ReservationId);
+                return false;
+            }
+
+            if (customer.FirstName != reservation.User.FirstName || customer.LastName != reservation.User.LastName || customer.Email != reservation.User.Email || customer.PhoneNumber != reservation.User.PhoneNumber)
+            {
+                customer.FirstName = reservation.User.FirstName;
+                customer.LastName = reservation.User.LastName;
+                customer.Email = reservation.User.Email;
+                customer.PhoneNumber = reservation.User.PhoneNumber;
+
+                await _userManager.UpdateAsync(customer);
+            }
+
+            // Update reservation details
+            existingReservation.ReservationTime = reservation.ReservationTime;
+            existingReservation.NumberOfGuests = reservation.NumberOfGuests;
+
+            _context.Reservations.Update(existingReservation);
             await _context.SaveChangesAsync();
+
             _logger.LogInformation("Updated reservation ID {id}", reservation.ReservationId);
             return true;
         }

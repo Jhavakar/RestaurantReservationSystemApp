@@ -79,22 +79,7 @@ namespace RestaurantBackend.Controllers
                 };
 
                 return Ok(response);
-            }
-        
-        // GET: api/Reservations/user
-        // [Authorize]
-        // [HttpGet("user")]
-        // public async Task<IActionResult> GetUserReservations()
-        // {
-        //     var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        //     if (string.IsNullOrEmpty(userId))
-        //     {
-        //         return Unauthorized("User ID not found.");
-        //     }
-
-        //     var reservations = await _reservationService.GetReservationsByUserIdAsync(userId);
-        //     return Ok(reservations);
-        // }       
+            }  
 
         // GET: api/Reservations/user-reservations
         [HttpGet("user-reservations")]
@@ -124,8 +109,8 @@ namespace RestaurantBackend.Controllers
                 var reservation = _mapper.Map<Reservation>(model);
                 reservation.ReservationId = id; // Ensure the ID is set correctly
 
-                var updatedReservation = await _reservationService.UpdateReservationAsync(reservation);
-                if (updatedReservation == null)
+                var updateResult = await _reservationService.UpdateReservationAsync(reservation); // Pass the mapped Reservation model
+                if (!updateResult)
                 {
                     return NotFound($"No reservation found with ID {id}.");
                 }
@@ -135,6 +120,7 @@ namespace RestaurantBackend.Controllers
             catch (Exception ex)
             {
                 // Log the exception here
+                _logger.LogError(ex, "An error occurred while updating the reservation.");
                 return StatusCode(500, "An error occurred while updating the reservation.");
             }
         }

@@ -14,10 +14,6 @@ namespace RestaurantBackend.Models
         [Required, MaxLength(50)]
         public string LastName { get; set; } = string.Empty;
 
-        // Custom properties specific to your application
-        // public string TemporaryPassword { get; set; } = string.Empty;
-        // public DateTime? TemporaryPasswordExpiration { get; set; }
-
         public virtual ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
 
     }

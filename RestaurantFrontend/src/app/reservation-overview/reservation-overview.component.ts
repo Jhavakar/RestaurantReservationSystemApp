@@ -45,8 +45,10 @@ export class ReservationOverviewComponent implements OnInit {
         console.log('Reservations loaded:', reservations); 
         this.reservations = reservations;
         this.reservations.forEach(reservation => {
-          this.editForms[reservation.reservationId] = this.createFormGroup(reservation);
-          this.editingStates[reservation.reservationId] = false;
+          if (reservation.reservationId !== undefined) {
+            this.editForms[reservation.reservationId] = this.createFormGroup(reservation);
+            this.editingStates[reservation.reservationId] = false;
+          }
         });
       },
       error: (error) => console.error('Error loading reservations:', error)
@@ -57,9 +59,10 @@ export class ReservationOverviewComponent implements OnInit {
     return this.fb.group({
       firstName: [reservation.user.firstName, Validators.required],
       lastName: [reservation.user.lastName, Validators.required],
-      email: [reservation.user.email, [Validators.required, Validators.email]],
+      emailAddress: [reservation.user.emailAddress, [Validators.required, Validators.email]],
+      phoneNumber: [reservation.user.phoneNumber],
       reservationTime: [reservation.reservationTime, Validators.required],
-      numberOfGuests: [reservation.numberOfGuests, Validators.required]
+      numberOfGuests: [reservation.numberOfGuests, Validators.required],
     });
   }  
 
@@ -68,35 +71,55 @@ export class ReservationOverviewComponent implements OnInit {
   }
 
   updateReservation(reservationId: number): void {
-    if (this.editForms[reservationId].valid) {
-      const updatedReservation = this.editForms[reservationId].value;
-      this.reservationService.updateReservation(reservationId, updatedReservation).subscribe({
-        next: () => {
-          this.reservations = this.reservations.map(res => {
-            if (res.reservationId === reservationId) {
-              return { ...res, ...updatedReservation };
-            }
-            return res;
-          });
-          this.editingStates[reservationId] = false;
-          alert('Reservation updated successfully!');
-        },
-        error: (error) => {
-          console.error('Failed to update reservation:', error);
-          alert('Failed to update reservation.');
-        }
-      });
-    } else {
+    if (!this.editForms[reservationId].valid) {
       alert('Please correct the errors in the form.');
+      return;
     }
-  }  
+  
+    const updatedData = this.editForms[reservationId].value;
+    const existingReservation = this.reservations.find(r => r.reservationId === reservationId);
+  
+    if (!existingReservation) {
+      console.error(`No reservation found with id ${reservationId}`);
+      return;
+    }
+  
+    const payload: ReservationModel = {
+      reservationId: reservationId,
+      reservationTime: updatedData.reservationTime,
+      numberOfGuests: updatedData.numberOfGuests,
+      user: {
+        id: existingReservation.user.id,
+        firstName: updatedData.firstName,
+        lastName: updatedData.lastName,
+        emailAddress: updatedData.emailAddress,
+        phoneNumber: updatedData.phoneNumber,
+        password: existingReservation.user.password // Assuming password is needed, otherwise remove it
+      }
+    };
+
+    console.log('Payload being sent:', payload);
+  
+    this.reservationService.updateReservation(reservationId, payload).subscribe({
+      next: () => {
+        this.reservations = this.reservations.map(res => res.reservationId === reservationId ? { ...res, ...payload } : res);
+        this.editingStates[reservationId] = false;
+        alert('Reservation updated successfully!');
+      },
+      error: (error) => {
+        console.error('Failed to update reservation:', error);
+        alert(`Failed to update reservation: ${error.error.errors}`);
+      }
+    });
+  }
+  
 
   deleteReservation(reservationId: number): void {
     if (confirm('Are you sure you want to delete this reservation?')) {
       this.reservationService.deleteReservation(reservationId).subscribe({
         next: () => {
           this.reservations = this.reservations.filter(r => r.reservationId !== reservationId);
-          delete this.editingStates[reservationId];  // Clean up editing state
+          delete this.editingStates[reservationId];
         },
         error: (error) => console.error('Error deleting reservation:', error)
       });
@@ -104,6 +127,6 @@ export class ReservationOverviewComponent implements OnInit {
   }
 
   cancelEdit(reservationId: number): void {
-    this.editingStates[reservationId] = false;  // Hide the form without saving changes
+    this.editingStates[reservationId] = false;
   }
 }

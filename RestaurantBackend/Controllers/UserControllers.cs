@@ -192,7 +192,18 @@ public class UsersController : ControllerBase
             return BadRequest(new { message = "Password setting failed.", errors });
         }
 
-        // Provide success response or redirect
-        return Ok(new { success = true, message = "Password has been successfully set. You can now log in." });
+        // Confirm the user's email if it hasn't been confirmed yet
+        if (!user.EmailConfirmed)
+        {
+            var confirmEmailResult = await _userManager.ConfirmEmailAsync(user, model.Token);
+            if (!confirmEmailResult.Succeeded)
+            {
+                return BadRequest(new { message = "Email confirmation failed." });
+            }
+        }
+
+        // Provide success response
+        return Ok(new { success = true, message = "Password has been successfully set and email confirmed. You can now log in." });
     }
+
 }

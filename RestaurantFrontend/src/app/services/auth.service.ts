@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { LoginModel } from '../models/login.model';
-import { ResetPasswordModel } from '../models/reset-password.model';
+import { SetPasswordModel } from '../models/set-password.model';
 
 
 @Injectable({
@@ -41,7 +41,7 @@ export class AuthService {
     return this.currentUserEmail.asObservable();
   }
 
-  resetPassword(data: ResetPasswordModel): Observable<any> {
+  setPassword(data: SetPasswordModel): Observable<any> {
     return this.http.post(`${this.apiUrl}/Users/reset-password`, data).pipe(
       catchError(error => {
         console.error('Error making request:', error);
