@@ -16,10 +16,9 @@ namespace RestaurantBackend.Services
         Task<IdentityResult> CreateCustomerAsync(CustomerVM model);
         Task<IdentityResult> UpdateCustomerAsync(string customerId, CustomerVM model);
         Task<IdentityResult> DeleteCustomerAsync(string customerId);
-        Task<CustomerVM> GetCustomerByIdAsync(string customerId);
-        Task<CustomerVM> GetCustomerByEmailAsync(string email);
+        Task<CustomerVM?> GetCustomerByIdAsync(string customerId); // Nullable return type
+        Task<CustomerVM?> GetCustomerByEmailAsync(string email); // Nullable return type
         Task<IdentityResult> UpdatePasswordAsync(string userId, string currentPassword, string newPassword);
-
     }
 
     public class CustomerService : ICustomerService
@@ -80,7 +79,7 @@ namespace RestaurantBackend.Services
             customer.FirstName = model.FirstName;
             customer.LastName = model.LastName;
             customer.PhoneNumber = model.PhoneNumber;
-            customer.Email = model.EmailAddress; 
+            customer.Email = model.EmailAddress;
 
             var result = await _userManager.UpdateAsync(customer);
             if (result.Succeeded)
@@ -121,7 +120,7 @@ namespace RestaurantBackend.Services
             return result;
         }
 
-        public async Task<CustomerVM> GetCustomerByIdAsync(string customerId)
+        public async Task<CustomerVM?> GetCustomerByIdAsync(string customerId) // Nullable return type
         {
             var customer = await _userManager.FindByIdAsync(customerId);
             if (customer == null)
@@ -139,7 +138,7 @@ namespace RestaurantBackend.Services
             };
         }
 
-        public async Task<CustomerVM> GetCustomerByEmailAsync(string email)
+        public async Task<CustomerVM?> GetCustomerByEmailAsync(string email) // Nullable return type
         {
             var customer = await _userManager.FindByEmailAsync(email);
             if (customer == null)
@@ -156,14 +155,14 @@ namespace RestaurantBackend.Services
                 PhoneNumber = customer.PhoneNumber
             };
         }
- 
+
         public async Task<IdentityResult> UpdatePasswordAsync(string userId, string currentPassword, string newPassword)
         {
             var customer = await _userManager.FindByIdAsync(userId);
             if (customer == null)
             {
                 _logger.LogError("User not found.");
-                return IdentityResult.Failed(new IdentityError { Description = "User not found2" });
+                return IdentityResult.Failed(new IdentityError { Description = "User not found." });
             }
 
             // This checks if the current password is correct
@@ -176,7 +175,5 @@ namespace RestaurantBackend.Services
             // If the current password is correct, proceed to update to the new password
             return await _userManager.ChangePasswordAsync(customer, currentPassword, newPassword);
         }
-
     }
-
 }

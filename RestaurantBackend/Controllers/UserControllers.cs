@@ -141,7 +141,7 @@ public class UsersController : ControllerBase
             Email = reservation.User.Email ?? "N/A",
             ReservationDetails = new
             {
-                reservation.ReservationTime,
+                ReservationDateTime = reservation.ReservationDateTime.ToString("o"),
                 reservation.NumberOfGuests
             },
             HasPassword = await _userManager.HasPasswordAsync(reservation.User)

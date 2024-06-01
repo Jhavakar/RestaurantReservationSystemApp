@@ -12,9 +12,9 @@ import { SetPasswordModel } from '../models/set-password.model';
 })
 export class AuthService {
   private apiUrl = 'http://localhost:5068/api'; 
-  private currentUserEmail = new BehaviorSubject<string|null>(null);
+  private currentUserEmail = new BehaviorSubject<string | null>(null);
   
-  constructor(private http: HttpClient, private router: Router) { }
+  constructor(private http: HttpClient, private router: Router) {}
 
   // Fetch reservation information and verify the user
   verifyAndFetchReservation(email: string, token: string): Observable<any> {
@@ -22,7 +22,7 @@ export class AuthService {
     return this.http.get<any>(`${this.apiUrl}/Users/verify-and-fetch-reservation`, { params })
       .pipe(
         tap(response => {
-          console.log('API Response:', response); // See what the actual response is
+          console.log('API Response:', response);
           if (response.email) {
             this.currentUserEmail.next(response.email);
           } else {
@@ -35,9 +35,8 @@ export class AuthService {
         })
       );
   }
-  
 
-  getCurrentUserEmail(): Observable<string|null> {
+  getCurrentUserEmail(): Observable<string | null> {
     return this.currentUserEmail.asObservable();
   }
 
@@ -50,25 +49,20 @@ export class AuthService {
     );
   }
   
-  
   login(email: string, password: string): Observable<any> {
     const loginData: LoginModel = { emailAddress: email, password: password };
     return this.http.post<{ token: string }>(`${this.apiUrl}/Users/login`, loginData)
       .pipe(
         tap(response => {
           localStorage.setItem('auth_token', response.token);
-          this.router.navigate(['/reservation-overview']); // Ensure correct routing
+          this.currentUserEmail.next(email); // Set current user email on successful login
+          this.router.navigate(['/reservation-overview']);
         }),
         catchError(error => {
           console.error('Login failed:', error);
           return throwError(() => new Error('Login failed'));
         })
       );
-  }
-
-  // Method to store the JWT token in local storage
-  private storeToken(token: string): void {
-    localStorage.setItem('auth_token', token);
   }
 
   // Method to get the JWT token from local storage
@@ -84,5 +78,6 @@ export class AuthService {
   // Method to log out the user and clear the stored token
   logout(): void {
     localStorage.removeItem('auth_token');
+    this.currentUserEmail.next(null); // Clear the current user email on logout
   }
 }

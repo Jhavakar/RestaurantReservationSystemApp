@@ -1,18 +1,19 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ReservationService } from '../services/reservation.service';
 
 @Component({
   selector: 'app-reservation-form',
-  standalone: true, 
+  standalone: true,
   templateUrl: './reservation-form.component.html',
   styleUrls: ['./reservation-form.component.css'],
-  imports: [ReactiveFormsModule, CommonModule], 
+  imports: [ReactiveFormsModule, CommonModule],
 })
-export class ReservationFormComponent {
+export class ReservationFormComponent implements OnInit {
   reservationForm: FormGroup;
   showConfirmation: boolean = false;
+  timeSlots: string[] = [];
 
   constructor(private fb: FormBuilder, private reservationService: ReservationService) {
     this.reservationForm = this.fb.group({
@@ -20,9 +21,22 @@ export class ReservationFormComponent {
       lastName: ['', Validators.required],
       emailAddress: ['', [Validators.required, Validators.email]],
       phoneNumber: [''],
+      reservationDate: ['', Validators.required],
       reservationTime: ['', Validators.required],
       numberOfGuests: ['', [Validators.required, Validators.min(1)]],
     });
+  }
+
+  ngOnInit(): void {
+    this.generateTimeSlots();
+  }
+
+  generateTimeSlots(): void {
+    for (let hour = 0; hour < 24; hour++) {
+      const hourString = hour.toString().padStart(2, '0');
+      this.timeSlots.push(`${hourString}:00`);
+      this.timeSlots.push(`${hourString}:30`);
+    }
   }
 
   onSubmit(): void {
@@ -38,14 +52,37 @@ export class ReservationFormComponent {
   }
 
   onConfirm(): void {
-    const reservationData = this.reservationForm.value;
+    const formValues = this.reservationForm.value;
+    const reservationDate = formValues.reservationDate;
+    const reservationTime = formValues.reservationTime;
+    const reservationDateTime = new Date(`${reservationDate}T${reservationTime}:00`);
+
+    if (!this.isValidTimeSlot(reservationDateTime)) {
+      console.error("Invalid time slot selected.");
+      alert("Invalid time slot selected.");
+      return;
+    }
+
+    const reservationData = {
+      ...formValues,
+      reservationDateTime: reservationDateTime
+    };
+
     // Call the ReservationService to submit the data
     this.reservationService.createReservation(reservationData).subscribe({
       next: (response) => {
         console.log('Reservation confirmed:', response);
+        alert('Reservation confirmed successfully!');
       },
-      error: (error) => console.error('There was an error!', error)
+      error: (error) => {
+        console.error('There was an error!', error);
+        alert('There was an error creating the reservation.');
+      }
     });
   }
-  
+
+  isValidTimeSlot(dateTime: Date): boolean {
+    const minutes = dateTime.getMinutes();
+    return minutes === 0 || minutes === 30;
+  }
 }

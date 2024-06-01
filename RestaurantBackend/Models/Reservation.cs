@@ -14,7 +14,7 @@ namespace RestaurantBackend.Models
         public int ReservationId { get; set; }
 
         [Required]
-        public DateTime ReservationTime { get; set; }
+        public DateTime ReservationDateTime { get; set; }
 
         [Required]
         [Range(1, int.MaxValue, ErrorMessage = "Number of guests must be at least 1")]

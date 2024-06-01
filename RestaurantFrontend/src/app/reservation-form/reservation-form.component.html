@@ -1,7 +1,13 @@
 <form *ngIf="!showConfirmation" [formGroup]="reservationForm" (ngSubmit)="onSubmit()">
   <div>
+    <label for="reservationDate">Reservation Date:</label>
+    <input type="date" formControlName="reservationDate" id="reservationDate">
+  </div>
+  <div>
     <label for="reservationTime">Reservation Time:</label>
-    <input type="datetime-local" formControlName="reservationTime" id="reservationTime">
+    <select formControlName="reservationTime" id="reservationTime">
+      <option *ngFor="let time of timeSlots" [value]="time">{{ time }}</option>
+    </select>
   </div>
   <div>
     <label for="firstName">First Name:</label>
@@ -29,7 +35,7 @@
 <div *ngIf="showConfirmation">
   <p>First Name: {{ reservationForm.value.firstName }}</p>
   <p>Last Name: {{ reservationForm.value.lastName }}</p>
-  <p>Reservation Time: {{ reservationForm.value.reservationTime }}</p>
+  <p>Reservation Time: {{ reservationForm.value.reservationDate }} {{ reservationForm.value.reservationTime }}</p>
   <p>Number of Guests: {{ reservationForm.value.numberOfGuests }}</p>
   <p>Email Address: {{ reservationForm.value.emailAddress }}</p>
   <p>Phone Number: {{ reservationForm.value.phoneNumber }}</p>

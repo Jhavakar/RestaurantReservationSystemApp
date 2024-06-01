@@ -59,27 +59,27 @@ namespace RestaurantBackend.Controllers
         // GET: api/Reservations/{id}
         [HttpGet("{id}")]
         public async Task<IActionResult> GetReservationById(int id)
+        {
+            var reservation = await _reservationService.GetReservationByIdAsync(id);
+            if (reservation == null)
             {
-                var reservation = await _reservationService.GetReservationByIdAsync(id);
-                if (reservation == null)
+                return NotFound(new { message = "Reservation not found." });
+            }
+
+            var response = new
+            {
+                FirstName = reservation.User?.FirstName ?? "N/A",
+                LastName = reservation.User?.LastName ?? "N/A",
+                Email = reservation.User?.Email ?? "N/A",
+                ReservationDetails = new
                 {
-                    return NotFound(new { message = "Reservation not found." });
+                    ReservationDateTime = reservation.ReservationDateTime.ToString("o"),
+                    reservation.NumberOfGuests
                 }
+            };
 
-                var response = new
-                {
-                    FirstName = reservation.User?.FirstName ?? "N/A",
-                    LastName = reservation.User?.LastName ?? "N/A",
-                    Email = reservation.User?.Email ?? "N/A",
-                    ReservationDetails = new
-                    {
-                        reservation.ReservationTime,
-                        reservation.NumberOfGuests
-                    }
-                };
-
-                return Ok(response);
-            }  
+            return Ok(response);
+        }
 
         // GET: api/Reservations/user-reservations
         [HttpGet("user-reservations")]
@@ -98,33 +98,39 @@ namespace RestaurantBackend.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateReservation(int id, [FromBody] ReservationVM model)
         {
+            _logger.LogInformation("Received request to update reservation with ID {id}", id);
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
+            // Log the incoming data
+            _logger.LogInformation("Received Model: {@Model}", model);
+
+            if (id != model.ReservationId)
+            {
+                return BadRequest("Reservation ID mismatch.");
+            }
+
             try
             {
-                // Map the ViewModel to the Model
-                var reservation = _mapper.Map<Reservation>(model);
-                reservation.ReservationId = id; // Ensure the ID is set correctly
-
-                var updateResult = await _reservationService.UpdateReservationAsync(reservation); // Pass the mapped Reservation model
-                if (!updateResult)
+                var updatedReservation = await _reservationService.UpdateReservationAsync(model);
+                if (updatedReservation == null)
                 {
+                    _logger.LogWarning("No reservation found with ID {id}", id);
                     return NotFound($"No reservation found with ID {id}.");
                 }
 
-                return NoContent();
+                return Ok(updatedReservation); // Changed to return the updated reservation object
             }
             catch (Exception ex)
             {
-                // Log the exception here
                 _logger.LogError(ex, "An error occurred while updating the reservation.");
                 return StatusCode(500, "An error occurred while updating the reservation.");
             }
         }
-        
+
         // DELETE: api/Reservations/{id}
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteReservation(int id)

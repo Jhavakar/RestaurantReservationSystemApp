@@ -15,6 +15,7 @@ namespace RestaurantBackend.Utility
 
             // Mapping for Reservation to ReservationVM and vice versa
             CreateMap<Reservation, ReservationVM>()
+                .ForMember(dest => dest.ReservationId, opt => opt.MapFrom(src => src.ReservationId))
                 .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.User.FirstName))
                 .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.User.LastName))
                 .ForMember(dest => dest.EmailAddress, opt => opt.MapFrom(src => src.User.Email))

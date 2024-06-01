@@ -30,12 +30,15 @@ export class ReservationService {
 
   updateReservation(id: number, reservation: ReservationModel): Observable<any> {
     const headers = new HttpHeaders({
-      'Content-Type': 'application/json' // Ensures correct content type header
+      'Content-Type': 'application/json'
     });
-
-    return this.http.put(`${this.apiUrl}/${id}`, reservation, { headers });
-  }
   
+    const url = `${this.apiUrl}/${id}`;
+    console.log(`PUT URL: ${url}`);
+    console.log('Payload:', reservation);
+  
+    return this.http.put(url, reservation, { headers });
+  }  
 
   deleteReservation(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${id}`);

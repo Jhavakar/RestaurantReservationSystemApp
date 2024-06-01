@@ -34,7 +34,7 @@ export class EditReservationComponent implements OnInit {
     this.reservationService.getReservation(this.reservationId).subscribe({
       next: (reservation: ReservationModel) => {
         this.editForm.patchValue({
-          reservationTime: reservation.reservationTime,
+          reservationTime: reservation.reservationDateTime,
           numberOfGuests: reservation.numberOfGuests
         });
       },
