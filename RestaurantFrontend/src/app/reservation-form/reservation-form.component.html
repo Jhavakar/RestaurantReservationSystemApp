@@ -1,3 +1,4 @@
+<!-- Form Section -->
 <form *ngIf="!showConfirmation" [formGroup]="reservationForm" (ngSubmit)="onSubmit()">
   <div>
     <label for="reservationDate">Reservation Date:</label>
@@ -29,17 +30,30 @@
     <label for="numberOfGuests">Number of Guests:</label>
     <input type="number" formControlName="numberOfGuests" id="numberOfGuests">
   </div>
-  <button type="submit">Submit Reservation</button>
+  <div>
+    <label for="requests">Special Requests:</label>
+    <textarea id="requests" name="requests" placeholder="Enter any dietary restrictions, special occasions, or seating preferences here."></textarea>
+  </div>
+  <button type="submit">Confirm Details</button>
 </form>
 
+<!-- Confirmation Section -->
 <div *ngIf="showConfirmation">
+  <h3>Confirm Your Reservation Details</h3>
+  <p>Reservation Date: {{ reservationForm.value.reservationDate }}</p>
+  <p>Reservation Time: {{ reservationForm.value.reservationTime }}</p>
   <p>First Name: {{ reservationForm.value.firstName }}</p>
   <p>Last Name: {{ reservationForm.value.lastName }}</p>
-  <p>Reservation Time: {{ reservationForm.value.reservationDate }} {{ reservationForm.value.reservationTime }}</p>
-  <p>Number of Guests: {{ reservationForm.value.numberOfGuests }}</p>
   <p>Email Address: {{ reservationForm.value.emailAddress }}</p>
   <p>Phone Number: {{ reservationForm.value.phoneNumber }}</p>
-
+  <p>Number of Guests: {{ reservationForm.value.numberOfGuests }}</p>
+  <input type="checkbox" id="agree" name="agree" [checked]="termsAccepted" (click)="openTermsModal($event)" required>
+  <label for="agree">I agree to the <a href="#" (click)="openTermsModal($event)">terms and conditions</a></label>
+  
   <button type="button" (click)="onEdit()">Back</button>
-  <button type="button" (click)="onConfirm()">Confirm</button>
+  <button type="button" (click)="onConfirm()">Submit Reservation</button>
 </div>
+
+<!-- Modals -->
+<app-terms-and-conditions-modal *ngIf="showTermsModal" (accepted)="termsAccepted = true; showTermsModal = false" (closed)="showTermsModal = false"></app-terms-and-conditions-modal>
+<app-reservation-success-modal *ngIf="showModal" (closeModal)="closeModal()"></app-reservation-success-modal>

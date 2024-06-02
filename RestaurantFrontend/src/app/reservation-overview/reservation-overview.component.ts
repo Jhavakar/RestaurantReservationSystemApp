@@ -5,13 +5,14 @@ import { AuthService } from '../services/auth.service';
 import { ReservationService } from '../services/reservation.service';
 import { ReservationModel } from '../models/reservation.model';
 import { Router } from '@angular/router';
+import { ReservationSuccessModalComponent } from '../components/reservation-success-modal/reservation-success-modal.component';
 
 @Component({
   selector: 'app-reservation-overview',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule],
+  imports: [ReactiveFormsModule, CommonModule, ReservationSuccessModalComponent],
   templateUrl: './reservation-overview.component.html',
-  styleUrl: './reservation-overview.component.css'
+  styleUrls: ['./reservation-overview.component.css']
 })
 
 export class ReservationOverviewComponent implements OnInit {
@@ -19,6 +20,7 @@ export class ReservationOverviewComponent implements OnInit {
   editForms: { [key: number]: FormGroup } = {};
   editingStates: { [key: number]: boolean } = {};
   timeSlots: string[] = [];
+  showModal = false;
 
   constructor(
     private reservationService: ReservationService,
@@ -148,7 +150,9 @@ export class ReservationOverviewComponent implements OnInit {
       next: () => {
         this.reservations = this.reservations.map(res => res.reservationId === reservationId ? { ...res, ...payload } : res);
         this.editingStates[reservationId] = false;
-        alert('Reservation updated successfully!');
+
+        // Show modal after successful update
+        this.showModal = true;
       },
       error: (error) => {
         console.error('Failed to update reservation:', error);
@@ -178,5 +182,9 @@ export class ReservationOverviewComponent implements OnInit {
     if (reservationId !== undefined) {
       this.editingStates[reservationId] = false;
     }
+  }
+
+  closeModal(): void {
+    this.showModal = false;
   }
 }

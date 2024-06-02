@@ -1,0 +1,16 @@
+<div class="modal-backdrop" (click)="close()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <h1>Terms and Conditions</h1>
+    <p>Please read these terms and conditions carefully before making a reservation.</p>
+    <ul>
+      <li>Cancellation Policy: Cancel at least 24 hours in advance to avoid a fee.</li>
+      <li>No-Show Policy: A fee of $20 per person will be charged for no-shows.</li>
+      <li>Credit Card Hold: We may require a credit card hold for reservations.</li>
+      <li>Arrival Time: We hold your table for 15 minutes past your reservation time.</li>
+      <li>Party Size Changes: Notify us of any changes to your party size at least 2 hours before your reservation.</li>
+      <li>Dining Duration: Please note that there is a 2-hour dining limit during peak times.</li>
+    </ul>
+    <button (click)="accept()">Accept</button>
+    <button (click)="close()">Close</button>
+  </div>
+</div>
