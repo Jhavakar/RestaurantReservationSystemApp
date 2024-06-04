@@ -1,0 +1,31 @@
+.time-slot-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.time-slot-container div {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  text-align: center;
+}
+
+.time-slot-container .available {
+  background-color: #e0ffe0;
+}
+
+.time-slot-container .selected {
+  background-color: #90ee90;
+  border: 2px solid #008000;
+}
+
+.time-slot-container .disabled {
+  background-color: #f0f0f0;
+  color: #888;
+  cursor: not-allowed;
+}

@@ -20,11 +20,13 @@ namespace RestaurantBackend.Utility
                 .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.User.LastName))
                 .ForMember(dest => dest.EmailAddress, opt => opt.MapFrom(src => src.User.Email))
                 .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.User.PhoneNumber))
+                .ForMember(dest => dest.SpecialRequests, opt => opt.MapFrom(src => src.SpecialRequests))
                 .ReverseMap()
                 .ForPath(dest => dest.User.FirstName, opt => opt.MapFrom(src => src.FirstName))
                 .ForPath(dest => dest.User.LastName, opt => opt.MapFrom(src => src.LastName))
                 .ForPath(dest => dest.User.Email, opt => opt.MapFrom(src => src.EmailAddress))
-                .ForPath(dest => dest.User.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber));
+                .ForPath(dest => dest.User.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
+                .ForPath(dest => dest.SpecialRequests, opt => opt.MapFrom(src => src.SpecialRequests));
         }
     }
 }

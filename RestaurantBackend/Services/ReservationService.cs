@@ -29,6 +29,8 @@ namespace RestaurantBackend.Services
         Task<IEnumerable<Reservation>> GetReservationsByEmailAsync(string email);
         Task<IEnumerable<Reservation>> GetAllReservationsAsync();
         Task SendConfirmationEmail(Customer customer, Reservation reservation);
+        Task<IEnumerable<string>> GetAvailableSlotsAsync(DateTime date);
+
     }
 
     public class ReservationService : IReservationService
@@ -69,7 +71,7 @@ namespace RestaurantBackend.Services
                     Email = model.EmailAddress,
                     FirstName = model.FirstName,
                     LastName = model.LastName,
-                    PhoneNumber = model.PhoneNumber // Set the phone number, which might be null
+                    PhoneNumber = model.PhoneNumber,
                 };
 
                 var result = await _userManager.CreateAsync(customer);
@@ -79,20 +81,7 @@ namespace RestaurantBackend.Services
                     return null;
                 }
             }
-            else
-            {
-                if (customer.FirstName != model.FirstName || customer.LastName != model.LastName || customer.PhoneNumber != model.PhoneNumber)
-                {
-                    _logger.LogWarning("Name mismatch or phone number mismatch for email {Email}. Existing records: {ExistingFirstName} {ExistingLastName} {ExistingPhoneNumber}, Provided: {ProvidedFirstName} {ProvidedLastName} {ProvidedPhoneNumber}",
-                        model.EmailAddress, customer.FirstName, customer.LastName, customer.PhoneNumber, model.FirstName, model.LastName, model.PhoneNumber);
-
-                    customer.FirstName = model.FirstName;
-                    customer.LastName = model.LastName;
-                    customer.PhoneNumber = model.PhoneNumber; // Update phone number
-                    await _userManager.UpdateAsync(customer);
-                }
-            }
-
+    
             try
             {
                 // Log the input date and time for debugging purposes
@@ -145,7 +134,9 @@ namespace RestaurantBackend.Services
                 {
                     UserId = customer.Id,
                     ReservationDateTime = reservationDateTime,
-                    NumberOfGuests = model.NumberOfGuests
+                    NumberOfGuests = model.NumberOfGuests,
+                    SpecialRequests = string.IsNullOrEmpty(model.SpecialRequests) ? "No special requests" : model.SpecialRequests,
+
                 };
 
                 // Validate the reservation details
@@ -281,6 +272,7 @@ namespace RestaurantBackend.Services
 
         existingReservation.ReservationDateTime = reservationDateTime;
         existingReservation.NumberOfGuests = model.NumberOfGuests;
+        existingReservation.SpecialRequests = model.SpecialRequests;
 
         _context.Reservations.Update(existingReservation);
         await _context.SaveChangesAsync();
@@ -459,6 +451,14 @@ namespace RestaurantBackend.Services
         {
             return reservationTime.Minute == 0 || reservationTime.Minute == 30;
         }
+
+        public async Task<IEnumerable<string>> GetAvailableSlotsAsync(DateTime date)
+    {
+        return await _context.Reservations
+            .Where(r => r.ReservationDateTime.Date == date.Date)
+            .Select(r => r.ReservationDateTime.ToString("HH:mm"))
+            .ToListAsync();
+    }
 
     }
 }

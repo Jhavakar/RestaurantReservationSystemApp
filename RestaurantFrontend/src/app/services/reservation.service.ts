@@ -24,6 +24,10 @@ export class ReservationService {
     return this.http.get<ReservationModel[]>(`${this.apiUrl}/user-reservations?email=${encodeURIComponent(email)}`);
   }
 
+  getAvailableSlots(date: string): Observable<string[]> {
+    return this.http.get<string[]>(`${this.apiUrl}/available-slots?date=${date}`);
+  }
+
   createReservation(reservation: ReservationModel): Observable<ReservationModel> {
     return this.http.post<ReservationModel>(this.apiUrl, reservation);
   }

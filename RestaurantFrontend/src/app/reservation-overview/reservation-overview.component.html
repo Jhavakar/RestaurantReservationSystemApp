@@ -14,6 +14,8 @@
         <li class="list-group-item"><strong>Phone Number (Optional):</strong> {{ reservation.user.phoneNumber }}</li>
         <li class="list-group-item"><strong>Date and Time:</strong> {{ reservation.reservationDateTime | date: 'short' }}</li>
         <li class="list-group-item"><strong>Number of Guests:</strong> {{ reservation.numberOfGuests }}</li>
+        <li class="list-group-item"><strong>Special Requests:</strong> {{ reservation.specialRequests ? reservation.specialRequests : 'No special requests' }}</li>
+
       </ul>
 
       <form *ngIf="reservation.reservationId !== undefined && editingStates[reservation.reservationId]" [formGroup]="editForms[reservation.reservationId]" (ngSubmit)="updateReservation(reservation.reservationId)">
@@ -31,21 +33,27 @@
         </div>
         <div class="form-group">
           <label>Phone Number (Optional):</label>
-          <input type="text" class="form-control" formControlName="phoneNumber">
+          <input type="text" class="form-control" formControlName="phoneNumber" placeholder="Enter phone number.">
         </div>
         <div class="form-group">
           <label>Date:</label>
           <input type="date" class="form-control" formControlName="reservationDate">
         </div>
-        <div class="form-group">
-          <label>Time:</label>
-          <select class="form-control" formControlName="reservationTime">
-            <option *ngFor="let time of timeSlots" [value]="time">{{ time }}</option>
+        <div>
+          <label for="reservationTime">Reservation Time:</label>
+          <select formControlName="reservationTime">
+            <option *ngFor="let timeSlot of timeSlots" [value]="timeSlot" [disabled]="!isTimeSlotAvailable(timeSlot)">
+              {{ timeSlot }}
+            </option>
           </select>
         </div>
         <div class="form-group">
           <label>Number of Guests:</label>
           <input type="number" class="form-control" formControlName="numberOfGuests">
+        </div>
+        <div class="form-group">
+          <label for="specialRequests">Special Requests:</label>
+          <textarea type="text" class="form-control" formControlName="specialRequests" placeholder="Enter any dietary restrictions, special occasions, or any other preferences here."></textarea>
         </div>
         <button type="submit" class="btn btn-success">Update Reservation</button>
         <button type="button" class="btn btn-secondary" (click)="cancelEdit(reservation.reservationId)">Cancel</button>

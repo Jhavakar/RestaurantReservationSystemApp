@@ -71,10 +71,12 @@ namespace RestaurantBackend.Controllers
                 FirstName = reservation.User?.FirstName ?? "N/A",
                 LastName = reservation.User?.LastName ?? "N/A",
                 Email = reservation.User?.Email ?? "N/A",
+                PhoneNumber = reservation.User?.PhoneNumber ?? "N/A",
                 ReservationDetails = new
                 {
                     ReservationDateTime = reservation.ReservationDateTime.ToString("o"),
-                    reservation.NumberOfGuests
+                    reservation.NumberOfGuests,
+                    reservation.SpecialRequests,
                 }
             };
 
@@ -145,6 +147,13 @@ namespace RestaurantBackend.Controllers
                 _logger.LogError(ex, $"Error deleting reservation with ID {id}.");
                 return NotFound($"Reservation with ID {id} not found.");
             }
+        }
+    
+        [HttpGet("available-slots")]
+        public async Task<IActionResult> GetAvailableSlots([FromQuery] DateTime date)
+        {
+            var reservedSlots = await _reservationService.GetAvailableSlotsAsync(date);
+            return Ok(reservedSlots);
         }
     }
 }

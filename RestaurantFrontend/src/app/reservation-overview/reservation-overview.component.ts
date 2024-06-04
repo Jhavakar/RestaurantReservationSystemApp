@@ -20,6 +20,7 @@ export class ReservationOverviewComponent implements OnInit {
   editForms: { [key: number]: FormGroup } = {};
   editingStates: { [key: number]: boolean } = {};
   timeSlots: string[] = [];
+  reservedSlots: string[] = [];
   showModal = false;
 
   constructor(
@@ -45,11 +46,29 @@ export class ReservationOverviewComponent implements OnInit {
   }
 
   generateTimeSlots(): void {
-    for (let hour = 0; hour < 24; hour++) {
+    for (let hour = 12; hour < 22; hour++) {
       const hourString = hour.toString().padStart(2, '0');
       this.timeSlots.push(`${hourString}:00`);
       this.timeSlots.push(`${hourString}:30`);
     }
+  }
+
+  fetchReservedSlots(date: string): void {
+    this.reservationService.getAvailableSlots(date).subscribe({
+      next: (reservedSlots: any) => {
+        this.reservedSlots = reservedSlots.map((time: any) => {
+          const dateTime = new Date(time);
+          return dateTime.toISOString().substr(11, 5);
+        });
+      },
+      error: (error) => {
+        console.error('Error fetching reserved slots:', error);
+      }
+    });
+  }
+
+  isTimeSlotAvailable(timeSlot: string): boolean {
+    return !this.reservedSlots.includes(timeSlot);
   }
 
   loadReservationsByEmail(email: string): void {
@@ -81,7 +100,8 @@ export class ReservationOverviewComponent implements OnInit {
       phoneNumber: [reservation.user.phoneNumber],
       reservationDate: [reservation.reservationDateTime.toISOString().split('T')[0], Validators.required],
       reservationTime: [reservation.reservationDateTime.toTimeString().substring(0, 5), Validators.required],
-      numberOfGuests: [reservation.numberOfGuests, [Validators.required, Validators.min(1)]]
+      numberOfGuests: [reservation.numberOfGuests, [Validators.required, Validators.min(1)]],
+      specialRequests: [reservation.specialRequests],
     });
   }
 
@@ -141,6 +161,7 @@ export class ReservationOverviewComponent implements OnInit {
       phoneNumber: updatedData.phoneNumber,
       reservationDate: reservationDate,
       reservationTime: reservationTime,
+      specialRequests: updatedData.specialRequests,
       isNewAccount: false
     };
 

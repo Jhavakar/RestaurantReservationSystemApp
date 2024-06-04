@@ -11,5 +11,6 @@ export interface ReservationModel {
   phoneNumber: string;
   reservationDate: string; 
   reservationTime: string;
+  specialRequests: string;
   isNewAccount?: boolean;
 }

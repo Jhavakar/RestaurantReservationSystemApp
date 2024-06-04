@@ -139,10 +139,12 @@ public class UsersController : ControllerBase
             FirstName = reservation.User.FirstName ?? "N/A",
             LastName = reservation.User.LastName ?? "N/A",
             Email = reservation.User.Email ?? "N/A",
+            PhoneNumber = reservation.User?.PhoneNumber ?? "N/A",
             ReservationDetails = new
             {
                 ReservationDateTime = reservation.ReservationDateTime.ToString("o"),
-                reservation.NumberOfGuests
+                reservation.NumberOfGuests,
+                reservation.SpecialRequests,
             },
             HasPassword = await _userManager.HasPasswordAsync(reservation.User)
         };

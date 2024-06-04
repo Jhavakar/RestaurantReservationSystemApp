@@ -14,6 +14,7 @@ namespace RestaurantBackend.ViewModels
         public string ReservationTime { get; set; } = string.Empty;
         public DateTime ReservationDateTime { get; set; }
         public int NumberOfGuests { get; set; }
+        public string SpecialRequests { get; set; } = string.Empty; 
         public bool IsNewAccount { get; set; }
     }
 

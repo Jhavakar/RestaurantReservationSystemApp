@@ -12,13 +12,16 @@ import { TermsAndConditionsModalComponent } from '../components/terms-and-condit
   styleUrls: ['./reservation-form.component.css'],
   imports: [ReactiveFormsModule, CommonModule, ReservationSuccessModalComponent, TermsAndConditionsModalComponent],
 })
+
 export class ReservationFormComponent implements OnInit {
   reservationForm: FormGroup;
-  showConfirmation: boolean = false;
+  showConfirmation = false;
   timeSlots: string[] = [];
+  reservedSlots: string[] = [];
   showModal = false;
   showTermsModal = false;
   termsAccepted = false;
+  errorMessage: string | null = null;
 
   constructor(private fb: FormBuilder, private reservationService: ReservationService) {
     this.reservationForm = this.fb.group({
@@ -29,6 +32,13 @@ export class ReservationFormComponent implements OnInit {
       reservationDate: ['', Validators.required],
       reservationTime: ['', Validators.required],
       numberOfGuests: ['', [Validators.required, Validators.min(1)]],
+      specialRequests: ['']
+    });
+
+    this.reservationForm.get('reservationDate')!.valueChanges.subscribe(date => {
+      if (date) {
+        this.fetchReservedSlots(date);
+      }
     });
   }
 
@@ -37,26 +47,54 @@ export class ReservationFormComponent implements OnInit {
   }
 
   generateTimeSlots(): void {
-    for (let hour = 0; hour < 24; hour++) {
+    for (let hour = 12; hour < 22; hour++) {
       const hourString = hour.toString().padStart(2, '0');
       this.timeSlots.push(`${hourString}:00`);
       this.timeSlots.push(`${hourString}:30`);
     }
   }
 
+  fetchReservedSlots(date: string): void {
+    this.reservationService.getAvailableSlots(date).subscribe({
+      next: (reservedSlots: string[]) => {
+        this.reservedSlots = reservedSlots;
+        console.log('Reserved slots:', this.reservedSlots);
+      },
+      error: (error) => {
+        console.error('Error fetching reserved slots:', error);
+      }
+    });
+  }
+
+  isTimeSlotAvailable(timeSlot: string): boolean {
+    const [hours, minutes] = timeSlot.split(':').map(Number);
+    return !this.reservedSlots.includes(timeSlot);
+  }
+
+  selectTimeSlot(timeSlot: string): void {
+    if (this.isTimeSlotAvailable(timeSlot)) {
+      this.reservationForm.patchValue({ reservationTime: timeSlot });
+    } else {
+      console.log(`Time slot ${timeSlot} is not available.`);
+    }
+  }
+
   onSubmit(): void {
     if (this.reservationForm.valid) {
-      this.showConfirmation = true; // Move to the confirmation view
+      this.errorMessage = null;
+      this.showConfirmation = true;
     } else {
       console.error('Form is not valid');
     }
   }
 
   onEdit(): void {
-    this.showConfirmation = false; // Go back to the form to allow editing
+    this.showConfirmation = false;
   }
 
   onConfirm(): void {
+    this.errorMessage = null;
+
     if (!this.termsAccepted) {
       alert('You must accept the terms and conditions');
       return;
@@ -68,8 +106,12 @@ export class ReservationFormComponent implements OnInit {
     const reservationDateTime = new Date(`${reservationDate}T${reservationTime}:00`);
 
     if (!this.isValidTimeSlot(reservationDateTime)) {
-      console.error("Invalid time slot selected.");
-      alert("Invalid time slot selected.");
+      this.errorMessage = "Invalid time slot selected.";
+      return;
+    }
+
+    if (!this.isTimeSlotAvailable(reservationTime)) {
+      this.errorMessage = `The time slot ${reservationTime} is unavailable for ${reservationDate}.`;
       return;
     }
 
@@ -78,15 +120,23 @@ export class ReservationFormComponent implements OnInit {
       reservationDateTime: reservationDateTime
     };
 
-    // Call the ReservationService to submit the data
     this.reservationService.createReservation(reservationData).subscribe({
       next: (response) => {
         console.log('Reservation confirmed:', response);
         this.showModal = true;
       },
       error: (error) => {
+        console.error('Error response from server:', error);
+        if (error && error.status === 400 && error.error) {
+          if (error.error.message && error.error.message.includes('time slot unavailable')) {
+            this.errorMessage = `The time slot ${reservationTime} is unavailable for ${reservationDate}.`;
+          } else {
+            this.errorMessage = `Error: ${error.error.message || 'Bad Request'}`;
+          }
+        } else {
+          this.errorMessage = 'There was an error creating the reservation.';
+        }
         console.error('There was an error!', error);
-        alert('There was an error creating the reservation.');
       }
     });
   }
@@ -100,7 +150,6 @@ export class ReservationFormComponent implements OnInit {
     event.preventDefault();
     this.showTermsModal = true;
   }
-  
 
   closeModal(): void {
     this.showModal = false;
