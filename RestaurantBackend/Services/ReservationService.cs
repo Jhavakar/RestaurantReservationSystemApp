@@ -356,7 +356,7 @@ namespace RestaurantBackend.Services
 
             var tokenEncoded = WebUtility.UrlEncode(token);
             var emailEncoded = WebUtility.UrlEncode(customer.Email);
-            var passwordResetLink = $"{frontendBaseUrl}/manage-reservation?token={tokenEncoded}&email={emailEncoded}";
+            var passwordResetLink = $"{frontendBaseUrl}/reservation-details?token={tokenEncoded}&email={emailEncoded}";
 
             _logger.LogInformation($"Password reset link: {passwordResetLink}");
 

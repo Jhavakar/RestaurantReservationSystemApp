@@ -4,13 +4,14 @@ import { CommonModule } from '@angular/common';
 import { ReservationService } from '../services/reservation.service';
 import { ReservationSuccessModalComponent } from '../components/reservation-success-modal/reservation-success-modal.component';
 import { TermsAndConditionsModalComponent } from '../components/terms-and-conditions-modal/terms-and-conditions-modal.component';
+import { NavbarComponent } from '../components/navbar/navbar.component';
 
 @Component({
   selector: 'app-reservation-form',
   standalone: true,
   templateUrl: './reservation-form.component.html',
   styleUrls: ['./reservation-form.component.css'],
-  imports: [ReactiveFormsModule, CommonModule, ReservationSuccessModalComponent, TermsAndConditionsModalComponent],
+  imports: [ReactiveFormsModule, CommonModule, ReservationSuccessModalComponent, TermsAndConditionsModalComponent, NavbarComponent],
 })
 
 export class ReservationFormComponent implements OnInit {

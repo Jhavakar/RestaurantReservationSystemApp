@@ -12,6 +12,9 @@ import { EditReservationComponent } from './edit-reservation/edit-reservation.co
 import { PasswordResetComponent } from './pages/password-reset/password-reset.component';
 import { AuthInterceptor } from './interceptor/auth.interceptors.service';
 import { AuthService } from './services/auth.service';
+import { ReservationDetailsComponent } from './reservation-details/reservation-details.component';
+import { SetupAccountComponent } from './setup-account/setup-account.component';
+import { NavbarComponent } from './components/navbar/navbar.component';
 
 @Component({
   selector: 'app-root',
@@ -30,6 +33,9 @@ import { AuthService } from './services/auth.service';
     ReservationOverviewComponent,
     EditReservationComponent,
     PasswordResetComponent,
+    ReservationDetailsComponent,
+    SetupAccountComponent,
+    NavbarComponent,
   ],
   providers: [
     AuthService,

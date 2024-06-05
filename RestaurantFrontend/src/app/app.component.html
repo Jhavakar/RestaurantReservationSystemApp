@@ -1,10 +1,9 @@
 <div>
-  <h1>Welcome to the App!</h1>
-  <nav>
-    <a routerLink="/customers">Customer Details</a>
-    <a routerLink="/reserve">Make a Reservation</a>
-    <a routerLink="/login">Login</a>
-    <a routerLink="/manage-reservation">Manage</a>
-  </nav>
-  <router-outlet></router-outlet> <!-- Routed components are displayed here -->
+  <!-- Add the navbar here so it is always displayed -->
+  <app-navbar></app-navbar>
+  
+  <!-- Main content will be rendered below the navbar -->
+  <div class="main-content">
+    <router-outlet></router-outlet> <!-- Routed components are displayed here -->
+  </div>
 </div>

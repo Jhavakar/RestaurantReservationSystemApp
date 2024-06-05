@@ -1,0 +1,46 @@
+  <div>
+    <div>
+      <h1 class="display-4">Manage Your Reservation</h1>
+      <p>Welcome, <span id="guestName">{{ firstName }} {{ lastName }}</span>!</p>
+    </div>
+
+    <!-- Reservation Details Section -->
+    <div id="reservation-details" class="card mb-4" *ngIf="reservationDetails">
+      <div class="card-body">
+        <h2 class="card-title">Reservation Details</h2>
+        <ul class="list-group">
+            <div>
+                <label for="firstName">First Name</label>
+                <p class="list-group-item">{{ firstName }}</p>
+            </div>
+            <div>
+                <label for="lastName">Last Name</label>
+                <p class="list-group-item">{{ lastName }}</p>
+            </div>
+            <div>
+                <label for="dateTime">Date and Time</label>
+                <p class="list-group-item">{{ reservationDetails.reservationDateTime | date: 'short' }}</p>
+            </div>
+            <div>
+                <label for="noOfGuests">Number of Guests</label>
+                <p class="list-group-item">{{ reservationDetails.numberOfGuests }}</p>
+            </div>
+            <div>
+                <label for="noOfGuests">Special Requests</label>
+                <p class="list-group-item">{{ reservationDetails.specialRequests ? reservationDetails.specialRequests : 'No special requests' }}</p>
+            </div>
+        </ul>
+      </div>
+    </div>  
+
+    <div class="mt-4">
+      <p *ngIf="!isExistingUser">
+        Don't have an account? 
+        <a [routerLink]="['/setup-account']" [queryParams]="{ email: email, token: token }">Set up your account</a>
+      </p>
+      <p *ngIf="isExistingUser">
+        Already have an account? 
+        <a [routerLink]="['/login']" [queryParams]="{ email: email, token: token }">Log in</a>
+      </p>
+    </div>
+  </div>

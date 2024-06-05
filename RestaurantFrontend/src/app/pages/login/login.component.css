@@ -1,0 +1,21 @@
+body {
+    font-family: Arial, sans-serif;
+    color: #fff;
+    background-color: #333;
+  }
+  
+  label {
+    display: block;
+    margin-top: 10px;
+    margin-bottom: 5px;
+    color: #FFA500; /* Orange color */
+  }
+
+  p {
+    margin: 0 !important;
+  }
+
+  button {
+    margin-top: 10px !important;
+    margin-bottom: 10px !important;
+  }

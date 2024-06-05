@@ -1,1 +1,131 @@
-/* You can add global styles to this file, and also import other style files */
+/* Global styles */
+
+body {
+    font-family: Arial, sans-serif;
+    color: #fff;
+    background-color: #333;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    overflow-x: hidden; /* Prevent horizontal overflow */
+}
+
+/* Header styles */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background-color: rgba(0, 0, 0, 0.7);
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 1000;
+    box-sizing: border-box;
+}
+
+header .logo {
+    font-size: 1.5em;
+    color: #FFA500; /* Orange color */
+}
+
+nav a {
+    color: #fff;
+    margin: 0 15px;
+    text-decoration: none;
+    font-size: 1em;
+    transition: color 0.3s ease;
+}
+
+nav a:hover {
+    color: #FFA500; /* Orange color on hover */
+}
+
+/* Add a margin to the main content to prevent overlap with the fixed header */
+.main-content {
+    margin-top: 40px; /* Adjust this value based on the height of your header */
+    padding: 20px; /* Optional padding for main content */
+    background-color: #333; /* Match the body background color */
+}
+
+
+.time-slot-container {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.time-slot-container div {
+    padding: 10px;
+    margin: 5px;
+    border: 1px solid #FFA500; /* Orange color */
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.time-slot-container div.available {
+    background-color: #444;
+    color: #fff;
+}
+
+.time-slot-container div.disabled {
+    background-color: #555;
+    color: #777;
+    cursor: not-allowed;
+}
+
+.time-slot-container div.selected {
+    background-color: #FFA500; /* Orange color */
+    color: #000;
+}
+
+button {
+    background-color: #FFA500; /* Orange color */
+    color: #000;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #e69500;
+}
+
+button:disabled {
+    background-color: #555;
+    color: #777;
+    cursor: not-allowed;
+}
+
+.confirm-button, .edit-button, .submit-button {
+    display: inline-block;
+    margin-top: 20px;
+}
+
+a {
+    color: #FFA500; /* Orange color */
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+.error-message {
+    color: red;
+    margin-top: 10px;
+}
+
+.container {
+    max-width: 800px;
+    margin: auto;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 20px;
+    border-radius: 10px;
+}
+
+h1, h2 {
+    color: #FFA500; /* Orange color */
+}
+
+

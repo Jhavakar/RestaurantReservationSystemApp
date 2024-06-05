@@ -1,0 +1,29 @@
+.hero {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.center-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.book-now {
+    background-color: #FFA500;
+    color: #fff;
+    padding: 15px 30px;
+    border: none;
+    cursor: pointer;
+    font-size: 1.5em;
+    margin-top: 20px;
+    transition: background-color 0.3s ease;
+}
+
+.book-now:hover {
+    background-color: #ff8c00;
+}

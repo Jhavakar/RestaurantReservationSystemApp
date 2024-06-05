@@ -1,70 +1,99 @@
-<!-- reservation-form.component.html -->
-<form *ngIf="!showConfirmation" [formGroup]="reservationForm" (ngSubmit)="onSubmit()">
-  <div>
-    <label for="reservationDate">Reservation Date:</label>
-    <input type="date" formControlName="reservationDate">
-  
-    <label for="reservationTime">Reservation Time:</label>
-    <div class="time-slot-container">
-      <div 
-        *ngFor="let timeSlot of timeSlots"
-        [ngClass]="{
-          'available': isTimeSlotAvailable(timeSlot),
-          'disabled': !isTimeSlotAvailable(timeSlot),
-          'selected': reservationForm.value.reservationTime === timeSlot
-        }"
-        (click)="selectTimeSlot(timeSlot)"
-      >
-        {{ timeSlot }}
+<div>
+  <form *ngIf="!showConfirmation" [formGroup]="reservationForm" (ngSubmit)="onSubmit()">
+    <div>
+      <label for="reservationDate">Reservation Date:</label>
+      <input type="date" formControlName="reservationDate">
+    
+      <label for="reservationTime">Reservation Time:</label>
+      <div class="time-slot-container">
+        <div 
+          *ngFor="let timeSlot of timeSlots"
+          [ngClass]="{
+            'available': isTimeSlotAvailable(timeSlot),
+            'disabled': !isTimeSlotAvailable(timeSlot),
+            'selected': reservationForm.value.reservationTime === timeSlot
+          }"
+          (click)="selectTimeSlot(timeSlot)"
+        >
+          {{ timeSlot }}
+        </div>
       </div>
+    </div>  
+    
+    <div>
+      <label for="firstName">First Name:</label>
+      <input type="text" formControlName="firstName" id="firstName">
     </div>
+    <div>
+      <label for="lastName">Last Name:</label>
+      <input type="text" formControlName="lastName" id="lastName">
+    </div>
+    <div>
+      <label for="emailAddress">Email Address:</label>
+      <input type="email" id="emailAddress" formControlName="emailAddress">
+    </div>
+    <div>
+      <label for="phoneNumber">Phone Number (Optional):</label>
+      <input type="text" id="phoneNumber" formControlName="phoneNumber">
+    </div>
+    <div>
+      <label for="numberOfGuests">Number of Guests:</label>
+      <input type="number" formControlName="numberOfGuests" id="numberOfGuests">
+    </div>
+    <div>
+      <label for="specialRequests">Special Requests:</label>
+      <textarea id="specialRequests" formControlName="specialRequests" placeholder="Enter any dietary restrictions, special occasions, or any other preferences here."></textarea>
+    </div>
+    <button type="submit">Confirm Details</button>
+  </form>
+  
+  <div *ngIf="showConfirmation">
+    <h3>Confirm Your Reservation Details</h3>
+    <div>
+      <label>Reservation Date:</label>
+      <p>{{ reservationForm.value.reservationDate }}</p>
+    </div>
+    <div>
+      <label>Reservation Time:</label>
+      <p>{{ reservationForm.value.reservationTime }}</p>
+    </div>
+    <div>
+      <label>First Name:</label>
+      <p>{{ reservationForm.value.firstName }}</p>
+    </div>
+    <div>
+      <label>Last Name:</label>
+      <p>{{ reservationForm.value.lastName }}</p>
+    </div>
+    <div>
+      <label>Email Address:</label>
+      <p>{{ reservationForm.value.emailAddress }}</p>
+    </div>
+    <div>
+      <label>Phone Number:</label>
+      <p>{{ reservationForm.value.phoneNumber }}</p>
+    </div>
+    <div>
+      <label>Number of Guests:</label>
+      <p>{{ reservationForm.value.numberOfGuests }}</p>
+    </div>
+    <div>
+      <label>Special Requests:</label>
+      <p>{{ reservationForm.value.specialRequests ? reservationForm.value.specialRequests : 'No special requests' }}</p>
+    </div>
+    <div class="checkbox-container">
+      <input type="checkbox" id="agree" name="agree" [checked]="termsAccepted" (click)="openTermsModal($event)" required>
+      <label for="agree">I agree to the <a href="#" (click)="openTermsModal($event)">terms and conditions</a></label>
+    </div>
+    
+    <div class="button-group">
+      <button type="button" (click)="onEdit()">Back</button>
+      <button type="button" (click)="onConfirm()">Submit Reservation</button>
+    </div>
+    <p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
   </div>  
   
-  <div>
-    <label for="firstName">First Name:</label>
-    <input type="text" formControlName="firstName" id="firstName">
-  </div>
-  <div>
-    <label for="lastName">Last Name:</label>
-    <input type="text" formControlName="lastName" id="lastName">
-  </div>
-  <div>
-    <label for="emailAddress">Email Address:</label>
-    <input type="email" id="emailAddress" formControlName="emailAddress">
-  </div>
-  <div>
-    <label for="phoneNumber">Phone Number (Optional):</label>
-    <input type="text" id="phoneNumber" formControlName="phoneNumber">
-  </div>
-  <div>
-    <label for="numberOfGuests">Number of Guests:</label>
-    <input type="number" formControlName="numberOfGuests" id="numberOfGuests">
-  </div>
-  <div>
-    <label for="specialRequests">Special Requests:</label>
-    <textarea id="specialRequests" formControlName="specialRequests" placeholder="Enter any dietary restrictions, special occasions, or any other preferences here."></textarea>
-  </div>
-  <button type="submit">Confirm Details</button>
-</form>
-
-<div *ngIf="showConfirmation">
-  <h3>Confirm Your Reservation Details</h3>
-  <p>Reservation Date: {{ reservationForm.value.reservationDate }}</p>
-  <p>Reservation Time: {{ reservationForm.value.reservationTime }}</p>
-  <p>First Name: {{ reservationForm.value.firstName }}</p>
-  <p>Last Name: {{ reservationForm.value.lastName }}</p>
-  <p>Email Address: {{ reservationForm.value.emailAddress }}</p>
-  <p>Phone Number: {{ reservationForm.value.phoneNumber }}</p>
-  <p>Number of Guests: {{ reservationForm.value.numberOfGuests }}</p>
-  <p>Special Requests: {{ reservationForm.value.specialRequests ? reservationForm.value.specialRequests : 'No special requests' }}</p>
-  <input type="checkbox" id="agree" name="agree" [checked]="termsAccepted" (click)="openTermsModal($event)" required>
-  <label for="agree">I agree to the <a href="#" (click)="openTermsModal($event)">terms and conditions</a></label>
-  
-  <button type="button" (click)="onEdit()">Back</button>
-  <button type="button" (click)="onConfirm()">Submit Reservation</button>
-  <p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
+  <app-terms-and-conditions-modal *ngIf="showTermsModal" (accepted)="termsAccepted = true; showTermsModal = false" (closed)="showTermsModal = false"></app-terms-and-conditions-modal>
+  <app-reservation-success-modal *ngIf="showModal" (closeModal)="closeModal()"></app-reservation-success-modal>  
 
 </div>
-
-<app-terms-and-conditions-modal *ngIf="showTermsModal" (accepted)="termsAccepted = true; showTermsModal = false" (closed)="showTermsModal = false"></app-terms-and-conditions-modal>
-<app-reservation-success-modal *ngIf="showModal" (closeModal)="closeModal()"></app-reservation-success-modal>
