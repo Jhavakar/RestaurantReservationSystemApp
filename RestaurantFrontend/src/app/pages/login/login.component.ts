@@ -16,33 +16,34 @@ export class LoginComponent {
   loginForm = new FormGroup({
     emailAddress: new FormControl('', [Validators.required, Validators.email]),
     password: new FormControl('', [Validators.required])
-});
+  });
 
   constructor(
     private authService: AuthService,
     private router: Router,
     private route: ActivatedRoute,
-    ) { }
+  ) { }
 
   login(): void {
     if (this.loginForm.valid) {
-        // Explicitly create an object that matches the LoginModel interface
-        const credentials: LoginModel = {
-          emailAddress: this.loginForm.get('emailAddress')?.value || '',
-          password: this.loginForm.get('password')?.value || ''
-        };
+      const credentials: LoginModel = {
+        emailAddress: this.loginForm.get('emailAddress')?.value || '',
+        password: this.loginForm.get('password')?.value || ''
+      };
 
-        this.authService.login(credentials.emailAddress, credentials.password).subscribe({
-          next: (response) => {
-            this.router.navigate(['/reservation-form']);
-            console.log('Navigated to:', response);
-
-          },
-          error: (error) => {
-            console.error('Login failed:', error);
-          }
-        });
+      this.authService.login(credentials.emailAddress, credentials.password).subscribe({
+        next: (response) => {
+          this.router.navigate(['/reservation-overview']);
+          console.log('Navigated to:', response);
+        },
+        error: (error) => {
+          console.error('Login failed:', error);
+        }
+      });
     }
-}
+  }
 
+  navigateToForgotPassword(): void {
+    this.router.navigate(['/password-reset']);
+  }
 }

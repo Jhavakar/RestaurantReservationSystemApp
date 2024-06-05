@@ -5,6 +5,7 @@ namespace RestaurantBackend.ViewModels
     public class ResetPasswordVM
     {
         public string Email { get; set; } = string.Empty;
+        
         [Required]
         [DataType(DataType.Password)]
         [Display(Name = "New password")]

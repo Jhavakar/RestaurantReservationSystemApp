@@ -11,8 +11,8 @@ using RestaurantBackend.Utility;
 using RestaurantBackend.ViewModels;
 using System;
 using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -25,15 +25,18 @@ public class UsersController : ControllerBase
     private readonly SignInManager<Customer> _signInManager;
     private readonly AppSettings _appSettings;
     private readonly ApplicationDbContext _context;
+    private readonly IPasswordService _passwordService;
 
     public UsersController(IConfiguration configuration, UserManager<Customer> userManager, 
-        SignInManager<Customer> signInManager, IOptions<AppSettings> appSettings, ApplicationDbContext context)
+        SignInManager<Customer> signInManager, IOptions<AppSettings> appSettings, ApplicationDbContext context,
+        IPasswordService passwordService)
     {
         _configuration = configuration;
         _userManager = userManager;
         _signInManager = signInManager;
         _appSettings = appSettings.Value;
         _context = context;
+        _passwordService = passwordService;
     }
 
     [HttpPost("login")]
@@ -50,19 +53,17 @@ public class UsersController : ControllerBase
             return Unauthorized(new { message = "User not found." });
         }
 
-        // Verify user credentials
         var result = await _signInManager.PasswordSignInAsync(user, loginVM.Password, isPersistent: false, lockoutOnFailure: false);
         if (!result.Succeeded)
         {
             return Unauthorized(new { message = "Invalid login attempt. Please check your credentials." });
         }
 
-        // Generate JWT token
         var token = GenerateJwtToken(user);
         return Ok(new { success = true, token });
     }
 
-    private string GenerateJwtToken(IdentityUser user)
+    private string GenerateJwtToken(Customer user)
     {
         var key = _appSettings.Secret ?? throw new InvalidOperationException("JWT Secret is not configured.");
         if (key.Length < 32)
@@ -88,32 +89,6 @@ public class UsersController : ControllerBase
             signingCredentials: credentials);
 
         return new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
-    }
-
-    [HttpPost("reset-password")]
-    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordVM model)
-    {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(new { message = "Invalid input data.", model });
-        }
-
-        var user = await _userManager.FindByEmailAsync(model.Email);
-        if (user == null)
-        {
-            return NotFound(new { message = "User with the specified email not found." });
-        }
-
-        // Validate the token and reset the password
-        var result = await _userManager.ResetPasswordAsync(user, model.Token, model.NewPassword);
-        if (!result.Succeeded)
-        {
-            // Collect errors to return
-            var errors = result.Errors.Select(e => e.Description);
-            return BadRequest(new { message = "Password reset failed. Please try again.", errors });
-        }
-
-        return Ok(new { success = true, message = "Password has been successfully reset." });
     }
 
     [HttpGet("verify-and-fetch-reservation")]
@@ -149,13 +124,11 @@ public class UsersController : ControllerBase
             HasPassword = await _userManager.HasPasswordAsync(reservation.User)
         };
 
-        // Log the response in the console for verification
         Console.WriteLine($"API Response: FirstName = {response.FirstName}, LastName = {response.LastName}, Email = {response.Email}");
 
         return Ok(response);
     }
 
-    // Display the set password form
     [HttpGet("user/set-password")]
     public IActionResult SetPassword(string email)
     {
@@ -163,7 +136,6 @@ public class UsersController : ControllerBase
         return Ok(new { message = "Set password form initialized.", model });
     }
 
-    // Process the set password form submission
     [HttpPost("user/set-password")]
     public async Task<IActionResult> SetPassword(UpdatePasswordVM model)
     {
@@ -172,21 +144,18 @@ public class UsersController : ControllerBase
             return BadRequest(new { message = "Invalid input data.", model });
         }
 
-        // Find the user by email
         var user = await _userManager.FindByEmailAsync(model.Email);
         if (user == null)
         {
             return NotFound(new { message = "User not found." });
         }
 
-        // Check if the user already has a password
         var hasPassword = await _userManager.HasPasswordAsync(user);
         if (hasPassword)
         {
             return Conflict(new { message = "User already has a password. Please log in instead." });
         }
 
-        // Add the password to the user's account
         var result = await _userManager.AddPasswordAsync(user, model.NewPassword);
         if (!result.Succeeded)
         {
@@ -194,7 +163,6 @@ public class UsersController : ControllerBase
             return BadRequest(new { message = "Password setting failed.", errors });
         }
 
-        // Confirm the user's email if it hasn't been confirmed yet
         if (!user.EmailConfirmed)
         {
             var confirmEmailResult = await _userManager.ConfirmEmailAsync(user, model.Token);
@@ -204,8 +172,69 @@ public class UsersController : ControllerBase
             }
         }
 
-        // Provide success response
         return Ok(new { success = true, message = "Password has been successfully set and email confirmed. You can now log in." });
+    }
+
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordVM model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(new { message = "Invalid input data." });
+        }
+
+        var user = await _userManager.FindByEmailAsync(model.Email);
+        if (user == null)
+        {
+            return BadRequest(new { message = "User not found." });
+        }
+
+        await _passwordService.SendResetPasswordEmailAsync(user, model);
+
+        return Ok(new { success = true, message = "Password reset link has been sent to your email." });
+    }
+
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordVM model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(new { message = "Invalid input data." });
+        }
+
+        var user = await _userManager.FindByEmailAsync(model.Email);
+        if (user == null)
+        {
+            return NotFound(new { message = "User not found." });
+        }
+
+        var result = await _userManager.ResetPasswordAsync(user, model.Token, model.NewPassword);
+        if (!result.Succeeded)
+        {
+            var errors = result.Errors.Select(e => e.Description);
+            return BadRequest(new { message = "Password reset failed. Please try again.", errors });
+        }
+
+        return Ok(new { success = true, message = "Password has been successfully reset." });
+    }
+
+    [HttpPost("updatePassword/{userId}")]
+    public async Task<IActionResult> UpdatePassword(string userId, [FromBody] UpdatePasswordVM model)
+    {
+        if (string.IsNullOrWhiteSpace(model.CurrentPassword) || string.IsNullOrWhiteSpace(model.NewPassword))
+        {
+            return BadRequest("Both current and new passwords are required.");
+        }
+
+        var result = await _passwordService.UpdatePasswordAsync(userId, model.CurrentPassword, model.NewPassword);
+        if (result.Succeeded)
+        {
+            return Ok("Password updated successfully.");
+        }
+        else
+        {
+            return BadRequest(result.Errors.Select(e => e.Description));
+        }
     }
 
 }

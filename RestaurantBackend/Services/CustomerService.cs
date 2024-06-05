@@ -2,10 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using RestaurantBackend.Data;
 using RestaurantBackend.Models;
-using System;
-using System.Collections.Generic;
-using System.Security.Cryptography;
-using System.Text;
+using RestaurantBackend.ViewModels;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -18,20 +15,17 @@ namespace RestaurantBackend.Services
         Task<IdentityResult> DeleteCustomerAsync(string customerId);
         Task<CustomerVM?> GetCustomerByIdAsync(string customerId); // Nullable return type
         Task<CustomerVM?> GetCustomerByEmailAsync(string email); // Nullable return type
-        Task<IdentityResult> UpdatePasswordAsync(string userId, string currentPassword, string newPassword);
     }
 
     public class CustomerService : ICustomerService
     {
         private readonly UserManager<Customer> _userManager;
         private readonly ILogger<CustomerService> _logger;
-        private readonly IPasswordService _passwordService;
 
-        public CustomerService(UserManager<Customer> userManager, ILogger<CustomerService> logger, IPasswordService passwordService)
+        public CustomerService(UserManager<Customer> userManager, ILogger<CustomerService> logger)
         {
             _userManager = userManager;
             _logger = logger;
-            _passwordService = passwordService;
         }
 
         public async Task<IdentityResult> CreateCustomerAsync(CustomerVM model)
@@ -45,7 +39,6 @@ namespace RestaurantBackend.Services
                 PhoneNumber = model.PhoneNumber
             };
 
-            // Check if UserName or Email is empty or null
             if (string.IsNullOrWhiteSpace(customer.UserName) || string.IsNullOrWhiteSpace(customer.Email))
             {
                 _logger.LogError("Username or Email is empty. Username and Email must be provided.");
@@ -53,11 +46,7 @@ namespace RestaurantBackend.Services
             }
 
             var result = await _userManager.CreateAsync(customer, model.Password);
-            if (result.Succeeded)
-            {
-                _logger.LogInformation($"New customer registered: {customer.Email}");
-            }
-            else
+            if (!result.Succeeded)
             {
                 foreach (var error in result.Errors)
                 {
@@ -82,11 +71,7 @@ namespace RestaurantBackend.Services
             customer.Email = model.EmailAddress;
 
             var result = await _userManager.UpdateAsync(customer);
-            if (result.Succeeded)
-            {
-                _logger.LogInformation($"Customer updated: {customer.Email}");
-            }
-            else
+            if (!result.Succeeded)
             {
                 foreach (var error in result.Errors)
                 {
@@ -106,11 +91,7 @@ namespace RestaurantBackend.Services
             }
 
             var result = await _userManager.DeleteAsync(customer);
-            if (result.Succeeded)
-            {
-                _logger.LogInformation($"Customer deleted: {customer.Email}");
-            }
-            else
+            if (!result.Succeeded)
             {
                 foreach (var error in result.Errors)
                 {
@@ -120,7 +101,7 @@ namespace RestaurantBackend.Services
             return result;
         }
 
-        public async Task<CustomerVM?> GetCustomerByIdAsync(string customerId) // Nullable return type
+        public async Task<CustomerVM?> GetCustomerByIdAsync(string customerId)
         {
             var customer = await _userManager.FindByIdAsync(customerId);
             if (customer == null)
@@ -156,24 +137,5 @@ namespace RestaurantBackend.Services
             };
         }
 
-        public async Task<IdentityResult> UpdatePasswordAsync(string userId, string currentPassword, string newPassword)
-        {
-            var customer = await _userManager.FindByIdAsync(userId);
-            if (customer == null)
-            {
-                _logger.LogError("User not found.");
-                return IdentityResult.Failed(new IdentityError { Description = "User not found." });
-            }
-
-            // This checks if the current password is correct
-            var checkPassword = await _userManager.CheckPasswordAsync(customer, currentPassword);
-            if (!checkPassword)
-            {
-                return IdentityResult.Failed(new IdentityError { Description = "Invalid current password" });
-            }
-
-            // If the current password is correct, proceed to update to the new password
-            return await _userManager.ChangePasswordAsync(customer, currentPassword, newPassword);
-        }
     }
 }

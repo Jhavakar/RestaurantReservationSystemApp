@@ -8,4 +8,7 @@
     <input type="password" id="password" formControlName="password" required>
   </div>
   <button type="submit" [disabled]="!loginForm.valid">Login</button>
+  <div>
+    <a (click)="navigateToForgotPassword()">Forgot Password?</a>
+  </div>
 </form>

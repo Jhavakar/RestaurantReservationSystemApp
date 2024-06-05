@@ -9,6 +9,7 @@ import { LoginComponent } from './pages/login/login.component';
 import { ManageReservationComponent } from './manage-reservation/manage-reservation.component';
 import { ReservationOverviewComponent } from './reservation-overview/reservation-overview.component';
 import { EditReservationComponent } from './edit-reservation/edit-reservation.component';
+import { PasswordResetComponent } from './pages/password-reset/password-reset.component';
 import { AuthInterceptor } from './interceptor/auth.interceptors.service';
 import { AuthService } from './services/auth.service';
 
@@ -28,6 +29,7 @@ import { AuthService } from './services/auth.service';
     ManageReservationComponent,
     ReservationOverviewComponent,
     EditReservationComponent,
+    PasswordResetComponent,
   ],
   providers: [
     AuthService,

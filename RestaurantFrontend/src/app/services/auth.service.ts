@@ -65,6 +65,24 @@ export class AuthService {
       );
   }
 
+  forgotPassword(data: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/Users/forgot-password`, data).pipe(
+      catchError(error => {
+        console.error('Error making request:', error);
+        return throwError(() => new Error(`Request failed with status ${error.status}: ${error.statusText}`));
+      })
+    );
+  }
+
+  resetPassword(data: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/Users/reset-password`, data).pipe(
+      catchError(error => {
+        console.error('Error making request:', error);
+        return throwError(() => new Error(`Request failed with status ${error.status}: ${error.statusText}`));
+      })
+    );
+  }  
+
   // Method to get the JWT token from local storage
   getJwtToken(): string | null {
     return localStorage.getItem('auth_token');
