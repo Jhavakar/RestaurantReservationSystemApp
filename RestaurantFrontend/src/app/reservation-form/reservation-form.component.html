@@ -1,4 +1,8 @@
 <div>
+  <div>
+    <h1 class="display-4">Book Your Reservation</h1>
+  </div>
+
   <form *ngIf="!showConfirmation" [formGroup]="reservationForm" (ngSubmit)="onSubmit()">
     <div>
       <label for="reservationDate">Reservation Date:</label>
@@ -67,7 +71,7 @@
     </div>
     <div>
       <label>Email Address:</label>
-      <p>{{ reservationForm.value.emailAddress }}</p>
+      <p>{{ reservationForm.value.email }}</p>
     </div>
     <div>
       <label>Phone Number:</label>

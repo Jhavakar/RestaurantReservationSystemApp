@@ -27,7 +27,7 @@ export class SetupAccountComponent implements OnInit {
     private router: Router
   ) {
     this.loginForm = this.fb.group({
-      emailAddress: ['', [Validators.required, Validators.email]],
+      email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required]]
     });
 
@@ -87,19 +87,19 @@ export class SetupAccountComponent implements OnInit {
       alert('Passwords do not match.');
       return;
     }
-
+  
     const formData = {
       email: this.signUpForm.value.email,
       newPassword: this.signUpForm.value.newPassword,
       confirmPassword: this.signUpForm.value.confirmPassword,
       token: this.token
     };
-
+  
     this.authService.setPassword(formData).subscribe({
       next: (response) => {
         if (response.success) {
           alert('Password set successfully. Please log in.');
-          this.isExistingUser = true;
+          this.router.navigate(['/login'], { queryParams: { email: this.email, token: this.token } });
         } else {
           alert('Failed to set password. Please try again.');
         }
@@ -110,6 +110,7 @@ export class SetupAccountComponent implements OnInit {
       }
     });
   }
+  
 
   onLoginSubmit(): void {
     if (this.loginForm.invalid) {

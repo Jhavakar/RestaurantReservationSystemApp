@@ -33,6 +33,7 @@ export class ReservationOverviewComponent implements OnInit {
   ngOnInit(): void {
     this.authService.getCurrentUserEmail().subscribe({
       next: (email) => {
+        console.log('Email fetched:', email);
         if (email) {
           this.loadReservationsByEmail(email);
         } else {
@@ -69,6 +70,14 @@ export class ReservationOverviewComponent implements OnInit {
 
   isTimeSlotAvailable(timeSlot: string): boolean {
     return !this.reservedSlots.includes(timeSlot);
+  }
+
+  selectTimeSlot(timeSlot: string, reservationId: number): void {
+    if (this.isTimeSlotAvailable(timeSlot)) {
+      this.editForms[reservationId].patchValue({ reservationTime: timeSlot });
+    } else {
+      console.log(`Time slot ${timeSlot} is not available.`);
+    }
   }
 
   loadReservationsByEmail(email: string): void {
