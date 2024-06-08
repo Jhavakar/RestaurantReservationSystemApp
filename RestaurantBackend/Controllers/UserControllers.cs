@@ -47,7 +47,7 @@ public class UsersController : ControllerBase
             return BadRequest(new { message = "Invalid input data." });
         }
 
-        var user = await _userManager.FindByEmailAsync(loginVM.EmailAddress);
+        var user = await _userManager.FindByEmailAsync(loginVM.Email);
         if (user == null)
         {
             return Unauthorized(new { message = "User not found." });
@@ -111,9 +111,9 @@ public class UsersController : ControllerBase
 
         var response = new
         {
-            FirstName = reservation.User.FirstName ?? "N/A",
-            LastName = reservation.User.LastName ?? "N/A",
-            Email = reservation.User.Email ?? "N/A",
+            FirstName = reservation.User?.FirstName ?? "N/A",
+            LastName = reservation.User?.LastName ?? "N/A",
+            Email = reservation.User?.Email ?? "N/A",
             PhoneNumber = reservation.User?.PhoneNumber ?? "N/A",
             ReservationDetails = new
             {
@@ -121,10 +121,8 @@ public class UsersController : ControllerBase
                 reservation.NumberOfGuests,
                 reservation.SpecialRequests,
             },
-            HasPassword = await _userManager.HasPasswordAsync(reservation.User)
+            HasPassword = await _userManager.HasPasswordAsync(user)
         };
-
-        Console.WriteLine($"API Response: FirstName = {response.FirstName}, LastName = {response.LastName}, Email = {response.Email}");
 
         return Ok(response);
     }
@@ -236,5 +234,4 @@ public class UsersController : ControllerBase
             return BadRequest(result.Errors.Select(e => e.Description));
         }
     }
-
 }

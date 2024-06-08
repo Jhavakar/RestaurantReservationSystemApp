@@ -13,7 +13,6 @@ namespace RestaurantBackend.Services
 {
     public interface IPasswordService
     {
-
         Task<IdentityResult> ChangePasswordAsync(Customer Customer, string currentPassword, string newPassword);
         Task<IdentityResult> ResetPasswordAsync(string userId, string token, string newPassword);
         Task<IdentityResult> UpdatePasswordAsync(string userId, string currentPassword, string newPassword);
@@ -144,6 +143,5 @@ namespace RestaurantBackend.Services
                 _logger.LogError(ex, "Failed to send password reset email to {Email}", customer.Email);
             }
         }
-
     }
 }

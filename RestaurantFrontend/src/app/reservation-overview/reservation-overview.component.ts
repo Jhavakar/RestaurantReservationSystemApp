@@ -75,8 +75,6 @@ export class ReservationOverviewComponent implements OnInit {
   selectTimeSlot(timeSlot: string, reservationId: number): void {
     if (this.isTimeSlotAvailable(timeSlot)) {
       this.editForms[reservationId].patchValue({ reservationTime: timeSlot });
-    } else {
-      console.log(`Time slot ${timeSlot} is not available.`);
     }
   }
 
@@ -105,7 +103,7 @@ export class ReservationOverviewComponent implements OnInit {
     return this.fb.group({
       firstName: [reservation.user.firstName, Validators.required],
       lastName: [reservation.user.lastName, Validators.required],
-      emailAddress: [reservation.user.emailAddress, [Validators.required, Validators.email]],
+      email: [reservation.user.email, [Validators.required, Validators.email]],
       phoneNumber: [reservation.user.phoneNumber],
       reservationDate: [reservation.reservationDateTime.toISOString().split('T')[0], Validators.required],
       reservationTime: [reservation.reservationDateTime.toTimeString().substring(0, 5), Validators.required],
@@ -122,7 +120,6 @@ export class ReservationOverviewComponent implements OnInit {
 
   updateReservation(reservationId: number | undefined): void {
     if (reservationId === undefined) {
-      console.error('Reservation ID is undefined.');
       return;
     }
 
@@ -143,12 +140,7 @@ export class ReservationOverviewComponent implements OnInit {
     const reservationTime = updatedData.reservationTime; // 'HH:mm' format
     const reservationDateTime = new Date(`${reservationDate}T${reservationTime}:00`);
 
-    console.log(`Formatted Reservation Date: ${reservationDate}`);
-    console.log(`Formatted Reservation Time: ${reservationTime}`);
-    console.log(`Combined Reservation DateTime: ${reservationDateTime.toISOString()}`);
-
     if (!this.isValidTimeSlot(reservationDateTime)) {
-      console.error("Invalid time slot selected.");
       alert("Invalid time slot selected.");
       return;
     }
@@ -161,20 +153,18 @@ export class ReservationOverviewComponent implements OnInit {
         id: existingReservation.user.id,
         firstName: updatedData.firstName,
         lastName: updatedData.lastName,
-        emailAddress: updatedData.emailAddress,
+        email: updatedData.email,
         phoneNumber: updatedData.phoneNumber
       },
       firstName: updatedData.firstName,
       lastName: updatedData.lastName,
-      emailAddress: updatedData.emailAddress,
+      email: updatedData.email,
       phoneNumber: updatedData.phoneNumber,
       reservationDate: reservationDate,
       reservationTime: reservationTime,
       specialRequests: updatedData.specialRequests,
       isNewAccount: false
     };
-
-    console.log('Payload being sent:', payload);
 
     this.reservationService.updateReservation(reservationId, payload).subscribe({
       next: () => {
@@ -185,7 +175,6 @@ export class ReservationOverviewComponent implements OnInit {
         this.showModal = true;
       },
       error: (error) => {
-        console.error('Failed to update reservation:', error);
         alert(`Failed to update reservation: ${error.error.errors}`);
       }
     });

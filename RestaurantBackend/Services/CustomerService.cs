@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
-using RestaurantBackend.Data;
 using RestaurantBackend.Models;
 using RestaurantBackend.ViewModels;
 using System.Linq;
@@ -13,8 +12,8 @@ namespace RestaurantBackend.Services
         Task<IdentityResult> CreateCustomerAsync(CustomerVM model);
         Task<IdentityResult> UpdateCustomerAsync(string customerId, CustomerVM model);
         Task<IdentityResult> DeleteCustomerAsync(string customerId);
-        Task<CustomerVM?> GetCustomerByIdAsync(string customerId); // Nullable return type
-        Task<CustomerVM?> GetCustomerByEmailAsync(string email); // Nullable return type
+        Task<CustomerVM?> GetCustomerByIdAsync(string customerId);
+        Task<CustomerVM?> GetCustomerByEmailAsync(string email);
     }
 
     public class CustomerService : ICustomerService
@@ -32,8 +31,8 @@ namespace RestaurantBackend.Services
         {
             var customer = new Customer
             {
-                Email = model.EmailAddress,
-                UserName = model.EmailAddress,
+                Email = model.Email,
+                UserName = model.Email,
                 FirstName = model.FirstName,
                 LastName = model.LastName,
                 PhoneNumber = model.PhoneNumber
@@ -68,7 +67,7 @@ namespace RestaurantBackend.Services
             customer.FirstName = model.FirstName;
             customer.LastName = model.LastName;
             customer.PhoneNumber = model.PhoneNumber;
-            customer.Email = model.EmailAddress;
+            customer.Email = model.Email;
 
             var result = await _userManager.UpdateAsync(customer);
             if (!result.Succeeded)
@@ -114,12 +113,12 @@ namespace RestaurantBackend.Services
             {
                 FirstName = customer.FirstName,
                 LastName = customer.LastName,
-                EmailAddress = customer.Email,
+                Email = customer.Email,
                 PhoneNumber = customer.PhoneNumber
             };
         }
 
-        public async Task<CustomerVM?> GetCustomerByEmailAsync(string email) // Nullable return type
+        public async Task<CustomerVM?> GetCustomerByEmailAsync(string email)
         {
             var customer = await _userManager.FindByEmailAsync(email);
             if (customer == null)
@@ -132,10 +131,9 @@ namespace RestaurantBackend.Services
             {
                 FirstName = customer.FirstName,
                 LastName = customer.LastName,
-                EmailAddress = customer.Email,
+                Email = customer.Email,
                 PhoneNumber = customer.PhoneNumber
             };
         }
-
     }
 }

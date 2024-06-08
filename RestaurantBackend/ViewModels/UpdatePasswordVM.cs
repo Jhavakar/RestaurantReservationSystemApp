@@ -8,7 +8,7 @@ namespace RestaurantBackend.ViewModels
 
         [DataType(DataType.Password)]
         [Display(Name = "Current Password")]
-        public string CurrentPassword { get; set; } = string.Empty; // Null or empty when resetting via email link
+        public string CurrentPassword { get; set; } = string.Empty;
 
         [Required]
         [StringLength(100, ErrorMessage = "The {0} must be at least {2} characters long.", MinimumLength = 6)]
@@ -22,7 +22,6 @@ namespace RestaurantBackend.ViewModels
         public string ConfirmPassword { get; set; } = string.Empty;
 
         public string Token { get; set; } = string.Empty;
-
     }
 
 }

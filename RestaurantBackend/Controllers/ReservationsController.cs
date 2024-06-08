@@ -1,20 +1,17 @@
 using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using RestaurantBackend.Models;
 using RestaurantBackend.Services;
 using RestaurantBackend.ViewModels;
-using System.Collections.Generic;
-using System.Security.Claims;
+using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace RestaurantBackend.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    // [Authorize]
     public class ReservationsController : ControllerBase
     {
         private readonly IReservationService _reservationService;
@@ -107,7 +104,6 @@ namespace RestaurantBackend.Controllers
                 return BadRequest(ModelState);
             }
 
-            // Log the incoming data
             _logger.LogInformation("Received Model: {@Model}", model);
 
             if (id != model.ReservationId)
@@ -142,13 +138,13 @@ namespace RestaurantBackend.Controllers
                 await _reservationService.CancelReservationAsync(id);
                 return NoContent();
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error deleting reservation with ID {id}.");
                 return NotFound($"Reservation with ID {id} not found.");
             }
         }
-    
+
         [HttpGet("available-slots")]
         public async Task<IActionResult> GetAvailableSlots([FromQuery] DateTime date)
         {

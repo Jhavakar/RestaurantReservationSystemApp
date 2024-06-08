@@ -14,7 +14,7 @@ import { LoginModel } from '../../models/login.model';
 
 export class LoginComponent {
   loginForm = new FormGroup({
-    emailAddress: new FormControl('', [Validators.required, Validators.email]),
+    email: new FormControl('', [Validators.required, Validators.email]),
     password: new FormControl('', [Validators.required])
   });
 
@@ -27,11 +27,11 @@ export class LoginComponent {
   login(): void {
     if (this.loginForm.valid) {
       const credentials: LoginModel = {
-        emailAddress: this.loginForm.get('emailAddress')?.value || '',
+        email: this.loginForm.get('email')?.value || '',
         password: this.loginForm.get('password')?.value || ''
       };
 
-      this.authService.login(credentials.emailAddress, credentials.password).subscribe({
+      this.authService.login(credentials.email, credentials.password).subscribe({
         next: (response) => {
           this.router.navigate(['/reservation-overview']);
           console.log('Navigated to:', response);

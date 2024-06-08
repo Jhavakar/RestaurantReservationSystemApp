@@ -34,7 +34,6 @@ export class ReservationDetailsComponent implements OnInit {
       if (this.email && this.token) {
         this.fetchReservationDetails();
       } else {
-        console.error('Missing email or token parameters.');
         alert('Invalid reservation link. Please use a valid link.');
       }
     });
@@ -48,11 +47,8 @@ export class ReservationDetailsComponent implements OnInit {
         this.firstName = response.firstName || 'N/A';
         this.lastName = response.lastName || 'N/A';
         this.isExistingUser = response.hasPassword || false;
-        console.log(`First Name: ${this.firstName}, Last Name: ${this.lastName}`);
-        console.log(`Is Existing User: ${this.isExistingUser}`);
       },
       error: error => {
-        console.error('Verification failed:', error);
         alert('Verification failed. Please check the link or try again.');
       }
     });

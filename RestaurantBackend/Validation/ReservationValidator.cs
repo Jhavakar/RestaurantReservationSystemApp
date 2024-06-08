@@ -5,7 +5,7 @@ namespace RestaurantBackend.Validation
 {
     public class ReservationTimeValidationAttribute : ValidationAttribute
     {
-        protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+        protected override ValidationResult IsValid(object? value, ValidationContext validationContext)
         {
             if (value is DateTime reservationTime)
             {
@@ -18,7 +18,7 @@ namespace RestaurantBackend.Validation
                     return new ValidationResult("Reservation time must be between 12 PM and 11 PM.");
                 }
 
-                return ValidationResult.Success;
+                return ValidationResult.Success!;
             }
 
             return new ValidationResult("Invalid reservation time format.");

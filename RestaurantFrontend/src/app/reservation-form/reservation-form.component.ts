@@ -28,7 +28,7 @@ export class ReservationFormComponent implements OnInit {
     this.reservationForm = this.fb.group({
       firstName: ['', Validators.required],
       lastName: ['', Validators.required],
-      emailAddress: ['', [Validators.required, Validators.email]],
+      email: ['', [Validators.required, Validators.email]], 
       phoneNumber: [''],
       reservationDate: ['', Validators.required],
       reservationTime: ['', Validators.required],
@@ -59,7 +59,6 @@ export class ReservationFormComponent implements OnInit {
     this.reservationService.getAvailableSlots(date).subscribe({
       next: (reservedSlots: string[]) => {
         this.reservedSlots = reservedSlots;
-        console.log('Reserved slots:', this.reservedSlots);
       },
       error: (error) => {
         console.error('Error fetching reserved slots:', error);
@@ -68,15 +67,12 @@ export class ReservationFormComponent implements OnInit {
   }
 
   isTimeSlotAvailable(timeSlot: string): boolean {
-    const [hours, minutes] = timeSlot.split(':').map(Number);
     return !this.reservedSlots.includes(timeSlot);
   }
 
   selectTimeSlot(timeSlot: string): void {
     if (this.isTimeSlotAvailable(timeSlot)) {
       this.reservationForm.patchValue({ reservationTime: timeSlot });
-    } else {
-      console.log(`Time slot ${timeSlot} is not available.`);
     }
   }
 
@@ -85,7 +81,7 @@ export class ReservationFormComponent implements OnInit {
       this.errorMessage = null;
       this.showConfirmation = true;
     } else {
-      console.error('Form is not valid');
+      this.errorMessage = 'Form is not valid';
     }
   }
 
@@ -95,32 +91,32 @@ export class ReservationFormComponent implements OnInit {
 
   onConfirm(): void {
     this.errorMessage = null;
-
+  
     if (!this.termsAccepted) {
       alert('You must accept the terms and conditions');
       return;
     }
-
+  
     const formValues = this.reservationForm.value;
     const reservationDate = formValues.reservationDate;
     const reservationTime = formValues.reservationTime;
     const reservationDateTime = new Date(`${reservationDate}T${reservationTime}:00`);
-
+  
     if (!this.isValidTimeSlot(reservationDateTime)) {
       this.errorMessage = "Invalid time slot selected.";
       return;
     }
-
+  
     if (!this.isTimeSlotAvailable(reservationTime)) {
       this.errorMessage = `The time slot ${reservationTime} is unavailable for ${reservationDate}.`;
       return;
     }
-
+  
     const reservationData = {
       ...formValues,
       reservationDateTime: reservationDateTime
     };
-
+  
     this.reservationService.createReservation(reservationData).subscribe({
       next: (response) => {
         console.log('Reservation confirmed:', response);
@@ -129,18 +125,14 @@ export class ReservationFormComponent implements OnInit {
       error: (error) => {
         console.error('Error response from server:', error);
         if (error && error.status === 400 && error.error) {
-          if (error.error.message && error.error.message.includes('time slot unavailable')) {
-            this.errorMessage = `The time slot ${reservationTime} is unavailable for ${reservationDate}.`;
-          } else {
-            this.errorMessage = `Error: ${error.error.message || 'Bad Request'}`;
-          }
+          this.errorMessage = `Error: ${error.error.message || 'Bad Request'}`;
         } else {
           this.errorMessage = 'There was an error creating the reservation.';
         }
         console.error('There was an error!', error);
       }
     });
-  }
+  }  
 
   isValidTimeSlot(dateTime: Date): boolean {
     const minutes = dateTime.getMinutes();

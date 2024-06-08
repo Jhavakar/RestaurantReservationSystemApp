@@ -27,12 +27,12 @@ export class SetupAccountComponent implements OnInit {
     private router: Router
   ) {
     this.loginForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
+      email: ['', [Validators.required, Validators.email]], 
       password: ['', [Validators.required]]
     });
 
     this.signUpForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
+      email: ['', [Validators.required, Validators.email]], 
       newPassword: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', [Validators.required]]
     });
@@ -119,11 +119,11 @@ export class SetupAccountComponent implements OnInit {
     }
 
     const credentials = {
-      emailAddress: this.loginForm.get('emailAddress')?.value || '',
+      email: this.loginForm.get('email')?.value || '', 
       password: this.loginForm.get('password')?.value || ''
     };
 
-    this.authService.login(credentials.emailAddress, credentials.password).subscribe({
+    this.authService.login(credentials.email, credentials.password).subscribe({
       next: (response) => {
         console.log('Logged in successfully:', response);
       },

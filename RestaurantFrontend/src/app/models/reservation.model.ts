@@ -7,7 +7,7 @@ export interface ReservationModel {
   numberOfGuests: number;
   firstName: string;
   lastName: string;
-  emailAddress: string;
+  email: string;
   phoneNumber: string;
   reservationDate: string; 
   reservationTime: string;

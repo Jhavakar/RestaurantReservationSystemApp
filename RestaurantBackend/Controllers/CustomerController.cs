@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -34,22 +35,20 @@ namespace RestaurantBackend.Controllers
 
             try
             {
-                var customer = _mapper.Map<Customer>(model); 
-                var result = await _customerService.CreateCustomerAsync(model); 
+                var customer = _mapper.Map<Customer>(model);
+                var result = await _customerService.CreateCustomerAsync(model);
 
                 if (result.Succeeded)
                 {
                     var createdCustomerVM = _mapper.Map<CustomerVM>(customer);
                     return CreatedAtAction(nameof(GetCustomer), new { id = customer.Id }, createdCustomerVM);
                 }
-                else
+
+                foreach (var error in result.Errors)
                 {
-                    foreach (var error in result.Errors)
-                    {
-                        ModelState.AddModelError("", error.Description);
-                    }
-                    return BadRequest(ModelState);
+                    ModelState.AddModelError(string.Empty, error.Description);
                 }
+                return BadRequest(ModelState);
             }
             catch (Exception ex)
             {
@@ -69,7 +68,7 @@ namespace RestaurantBackend.Controllers
             }
             return Ok(customer);
         }
-        
+
         // PUT: api/Customer/{id}
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateCustomer(string id, [FromBody] CustomerVM model)
@@ -88,14 +87,12 @@ namespace RestaurantBackend.Controllers
                     _logger.LogInformation($"Customer with ID {id} updated successfully.");
                     return NoContent(); // 204 No Content is typically returned when an update operation successfully completes.
                 }
-                else
+
+                foreach (var error in result.Errors)
                 {
-                    foreach (var error in result.Errors)
-                    {
-                        ModelState.AddModelError("", error.Description);
-                    }
-                    return BadRequest(ModelState);
+                    ModelState.AddModelError(string.Empty, error.Description);
                 }
+                return BadRequest(ModelState);
             }
             catch (Exception ex)
             {
@@ -117,14 +114,12 @@ namespace RestaurantBackend.Controllers
                     _logger.LogInformation($"Customer with ID {id} deleted successfully.");
                     return NoContent(); // 204 No Content is a common response for successful DELETE operations.
                 }
-                else
+
+                foreach (var error in result.Errors)
                 {
-                    foreach (var error in result.Errors)
-                    {
-                        ModelState.AddModelError("", error.Description);
-                    }
-                    return BadRequest(ModelState);
+                    ModelState.AddModelError(string.Empty, error.Description);
                 }
+                return BadRequest(ModelState);
             }
             catch (Exception ex)
             {
@@ -132,6 +127,5 @@ namespace RestaurantBackend.Controllers
                 return StatusCode(500, "Internal server error while deleting customer.");
             }
         }
-
-   }
+    }
 }

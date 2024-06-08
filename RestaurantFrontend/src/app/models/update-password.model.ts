@@ -1,5 +1,5 @@
 export interface UpdatePasswordModel {
-    emailAddress: string,
+    email: string,
     password: string,
     confirmPassword: string,
 

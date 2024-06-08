@@ -17,7 +17,7 @@ export class SetPasswordComponent {
   setPasswordForm: FormGroup;
 
   constructor(
-    private fb: FormBuilder, // Using FormBuilder to create the form group
+    private fb: FormBuilder,
     private authService: AuthService,
     private router: Router
   ) {
@@ -40,7 +40,6 @@ export class SetPasswordComponent {
       return;
     }
 
-    // Extract the data from the form
     const formData: SetPasswordModel = {
       email: this.setPasswordForm.value.email,
       token: this.setPasswordForm.value.token,
@@ -48,21 +47,18 @@ export class SetPasswordComponent {
       confirmPassword: this.setPasswordForm.value.confirmPassword,
     };
 
-    // Immediately submit the form data
     this.authService.setPassword(formData).subscribe({
       next: (response) => {
         if (response.success) {
-          alert('Password set successful');
-          console.log('Set password response:', response);
+          alert('Password set successfully');
           this.router.navigate(['/login'], { queryParams: { email: formData.email } });
         } else {
           alert('Failed to set password. Please try again.');
         }
       },
       error: (error) => {
-        console.error('Error setting password:', error);
         alert(`Failed to set password: ${error.message}`);
       }
-    });    
+    });
   }
 }
