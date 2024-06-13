@@ -4,6 +4,9 @@ namespace RestaurantBackend.ViewModels
 {
     public class CustomerVM
     {
+
+        public string Id { get; set; } = string.Empty;
+
         [Required]
         [MaxLength(50)]
         public string FirstName { get; set; } = string.Empty;
@@ -16,8 +19,7 @@ namespace RestaurantBackend.ViewModels
         [EmailAddress]
         public string Email { get; set; } = string.Empty;
 
-        [Phone]
-        public string PhoneNumber { get; set; } = string.Empty;
+        public string? PhoneNumber { get; set; } = string.Empty;
 
         [Required]
         [DataType(DataType.Password)]

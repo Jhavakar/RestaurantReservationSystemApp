@@ -32,7 +32,7 @@
         </div>
         <div class="inline-container">
           <label for="specialRequests">Special Requests:</label>
-          <p class="list-group-item">{{ reservation.specialRequests ? reservation.specialRequests : 'No special requests' }}</p>
+          <p class="list-group-item">{{ reservation.specialRequests }}</p>
         </div>        
       </ul>
 
@@ -47,15 +47,15 @@
         </div>
         <div class="form-group">
           <label>Email Address:</label>
-          <input type="email" class="form-control" formControlName="email">
+          <input type="email" class="form-control" formControlName="email" placeholder="Enter Email Address">
         </div>
         <div class="form-group">
           <label>Phone Number (Optional):</label>
-          <input type="text" class="form-control" formControlName="phoneNumber" placeholder="Enter phone number.">
+          <input type="text" class="form-control" formControlName="phoneNumber" placeholder="Enter phone number">
         </div>
         <div class="form-group">
           <label for="reservationDate">Reservation Date:</label>
-          <input type="date" formControlName="reservationDate">
+          <input type="date" formControlName="reservationDate" [min]="minDate">
         </div>
         <div class="form-group">
           <label for="reservationTime">Reservation Time:</label>
@@ -75,7 +75,7 @@
         </div>  
         <div class="form-group">
           <label>Number of Guests:</label>
-          <input type="number" class="form-control" formControlName="numberOfGuests">
+          <input type="number" class="form-control" formControlName="numberOfGuests" placeholder="Enter Number of Guests">
         </div>
         <div class="form-group">
           <label for="specialRequests">Special Requests:</label>

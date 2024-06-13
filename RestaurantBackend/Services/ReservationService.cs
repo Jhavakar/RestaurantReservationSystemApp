@@ -24,6 +24,7 @@ namespace RestaurantBackend.Services
         Task<IEnumerable<Reservation>> GetReservationsByEmailAsync(string email);
         Task<IEnumerable<Reservation>> GetAllReservationsAsync();
         Task SendConfirmationEmail(Customer customer, Reservation reservation);
+        Task SendUpdateEmail(Customer customer, Reservation reservation);
         Task<IEnumerable<string>> GetAvailableSlotsAsync(DateTime date);
     }
 

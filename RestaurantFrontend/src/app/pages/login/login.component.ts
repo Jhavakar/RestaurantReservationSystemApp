@@ -33,7 +33,7 @@ export class LoginComponent {
 
       this.authService.login(credentials.email, credentials.password).subscribe({
         next: (response) => {
-          this.router.navigate(['/reservation-overview']);
+          this.router.navigate(['/account-dashboard']);
           console.log('Navigated to:', response);
         },
         error: (error) => {

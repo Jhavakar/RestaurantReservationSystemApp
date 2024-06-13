@@ -66,12 +66,44 @@ namespace RestaurantBackend.Controllers
             {
                 return NotFound($"Customer with ID {id} not found.");
             }
-            return Ok(customer);
+
+            var customerVM = new CustomerVM
+            {
+                Id = customer.Id,  // Ensure the Id is included in the response
+                FirstName = customer.FirstName,
+                LastName = customer.LastName,
+                Email = customer.Email,
+                PhoneNumber = customer.PhoneNumber
+            };
+
+            return Ok(customerVM);
         }
 
-        // PUT: api/Customer/{id}
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateCustomer(string id, [FromBody] CustomerVM model)
+        // GET: api/Customer/email/{email}
+        [HttpGet("email/{email}")]
+        public async Task<IActionResult> GetCustomerByEmail(string email)
+        {
+            var customer = await _customerService.GetCustomerByEmailAsync(email);
+            if (customer == null)
+            {
+                return NotFound($"Customer with Email {email} not found.");
+            }
+
+            var customerVM = new CustomerVM
+            {
+                Id = customer.Id,  // Ensure the Id is included in the response
+                FirstName = customer.FirstName,
+                LastName = customer.LastName,
+                Email = customer.Email,
+                PhoneNumber = customer.PhoneNumber
+            };
+
+            return Ok(customerVM);
+        }
+
+        // PUT: api/Customer/email/{email}
+        [HttpPut("email/{email}")]
+        public async Task<IActionResult> UpdateCustomerByEmail(string email, [FromBody] CustomerVM model)
         {
             if (!ModelState.IsValid)
             {
@@ -80,11 +112,11 @@ namespace RestaurantBackend.Controllers
 
             try
             {
-                var result = await _customerService.UpdateCustomerAsync(id, model);
+                var result = await _customerService.UpdateCustomerByEmailAsync(email, model);
 
                 if (result.Succeeded)
                 {
-                    _logger.LogInformation($"Customer with ID {id} updated successfully.");
+                    _logger.LogInformation($"Customer with email {email} updated successfully.");
                     return NoContent(); // 204 No Content is typically returned when an update operation successfully completes.
                 }
 
@@ -96,7 +128,7 @@ namespace RestaurantBackend.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error updating customer with ID {id}.");
+                _logger.LogError(ex, $"Error updating customer with email {email}.");
                 return StatusCode(500, "Internal server error while updating customer.");
             }
         }
@@ -128,4 +160,5 @@ namespace RestaurantBackend.Controllers
             }
         }
     }
+
 }

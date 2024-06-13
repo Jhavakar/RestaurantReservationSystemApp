@@ -4,13 +4,12 @@
     justify-content: center;
     height: 100vh;
     text-align: center;
-    background: rgba(0, 0, 0, 0.5);
 }
 
-.center-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+.main-content {
+    margin: 0 !important;
+    padding: 0 !important;
+    background-color: transparent !important;
 }
 
 .book-now {
@@ -27,3 +26,4 @@
 .book-now:hover {
     background-color: #ff8c00;
 }
+

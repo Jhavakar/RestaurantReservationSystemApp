@@ -19,6 +19,7 @@ export class ReservationOverviewComponent implements OnInit {
   reservations: ReservationModel[] = [];
   editForms: { [key: number]: FormGroup } = {};
   editingStates: { [key: number]: boolean } = {};
+  minDate: string;
   timeSlots: string[] = [];
   reservedSlots: string[] = [];
   showModal = false;
@@ -28,7 +29,12 @@ export class ReservationOverviewComponent implements OnInit {
     private authService: AuthService,
     private fb: FormBuilder,
     private router: Router
-  ) {}
+  ) {
+
+    const today = new Date();
+    this.minDate = today.toISOString().split('T')[0];
+
+  }
 
   ngOnInit(): void {
     this.authService.getCurrentUserEmail().subscribe({

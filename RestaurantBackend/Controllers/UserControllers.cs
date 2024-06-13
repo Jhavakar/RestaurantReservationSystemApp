@@ -234,4 +234,50 @@ public class UsersController : ControllerBase
             return BadRequest(result.Errors.Select(e => e.Description));
         }
     }
+
+    [HttpPost("update-password")]
+    public async Task<IActionResult> UpdatePassword([FromBody] UpdatePasswordVM model)
+    {
+        if (string.IsNullOrWhiteSpace(model.CurrentPassword) || string.IsNullOrWhiteSpace(model.NewPassword))
+        {
+            return BadRequest("Both current and new passwords are required.");
+        }
+
+        var user = await _userManager.FindByEmailAsync(model.Email);
+        if (user == null)
+        {
+            return NotFound("User not found");
+        }
+
+        var result = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
+        if (result.Succeeded)
+        {
+            return Ok("Password updated successfully.");
+        }
+        else
+        {
+            return BadRequest(result.Errors.Select(e => e.Description));
+        }
+    }
+
+    [HttpPost("validate-password")]
+    public async Task<IActionResult> ValidatePassword([FromBody] LoginVM model)
+    {
+        var user = await _userManager.FindByEmailAsync(model.Email);
+        if (user == null)
+        {
+            return NotFound("User not found");
+        }
+
+        var result = await _signInManager.CheckPasswordSignInAsync(user, model.Password, false);
+        if (result.Succeeded)
+        {
+            return Ok();
+        }
+        else
+        {
+            return BadRequest("Invalid password");
+        }
+    }
+
 }

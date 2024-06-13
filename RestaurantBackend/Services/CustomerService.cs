@@ -10,7 +10,7 @@ namespace RestaurantBackend.Services
     public interface ICustomerService
     {
         Task<IdentityResult> CreateCustomerAsync(CustomerVM model);
-        Task<IdentityResult> UpdateCustomerAsync(string customerId, CustomerVM model);
+        Task<IdentityResult> UpdateCustomerByEmailAsync(string email, CustomerVM model);
         Task<IdentityResult> DeleteCustomerAsync(string customerId);
         Task<CustomerVM?> GetCustomerByIdAsync(string customerId);
         Task<CustomerVM?> GetCustomerByEmailAsync(string email);
@@ -55,19 +55,22 @@ namespace RestaurantBackend.Services
             return result;
         }
 
-        public async Task<IdentityResult> UpdateCustomerAsync(string customerId, CustomerVM model)
+        public async Task<IdentityResult> UpdateCustomerByEmailAsync(string email, CustomerVM model)
         {
-            var customer = await _userManager.FindByIdAsync(customerId);
-            if (customer == null)
+            var customer = await _userManager.FindByEmailAsync(email);
+            if (customer == null || string.IsNullOrWhiteSpace(customer.Id))
             {
-                _logger.LogError($"No customer found with ID {customerId}");
-                return IdentityResult.Failed(new IdentityError { Description = "Customer not found." });
+                _logger.LogError($"No customer found with email {email} or customer ID is missing");
+                return IdentityResult.Failed(new IdentityError { Description = "Customer not found or ID is missing." });
             }
+
+            model.Id = customer.Id;  
 
             customer.FirstName = model.FirstName;
             customer.LastName = model.LastName;
             customer.PhoneNumber = model.PhoneNumber;
             customer.Email = model.Email;
+            customer.UserName = model.Email;
 
             var result = await _userManager.UpdateAsync(customer);
             if (!result.Succeeded)
@@ -111,6 +114,7 @@ namespace RestaurantBackend.Services
 
             return new CustomerVM
             {
+                Id = customer.Id,  
                 FirstName = customer.FirstName,
                 LastName = customer.LastName,
                 Email = customer.Email,
@@ -129,6 +133,7 @@ namespace RestaurantBackend.Services
 
             return new CustomerVM
             {
+                Id = customer.Id,  
                 FirstName = customer.FirstName,
                 LastName = customer.LastName,
                 Email = customer.Email,
@@ -136,4 +141,5 @@ namespace RestaurantBackend.Services
             };
         }
     }
+
 }

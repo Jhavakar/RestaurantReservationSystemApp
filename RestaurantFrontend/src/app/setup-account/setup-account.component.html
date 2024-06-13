@@ -8,17 +8,17 @@
                 <form [formGroup]="signUpForm" (ngSubmit)="onSignUpSubmit()">
                     <div class="form-group">
                         <label for="email">Email Address:</label>
-                        <input type="email" formControlName="email" class="form-control" required>
+                        <input type="email" formControlName="email" class="form-control" placeholder="Enter Email Address" required>
                     </div>
                     <div class="form-group">
                         <label for="newPassword">New Password:</label>
-                        <input type="password" formControlName="newPassword" class="form-control" required>
+                        <input type="password" formControlName="newPassword" class="form-control" placeholder="Enter New Password" required>
                     </div>
                     <div class="form-group">
                         <label for="confirmPassword">Confirm Password:</label>
-                        <input type="password" formControlName="confirmPassword" class="form-control" required>
+                        <input type="password" formControlName="confirmPassword" class="form-control" placeholder="Confirm New Password" required>
                     </div>
-                    <button type="submit" class="btn btn-primary">Set Password</button>
+                    <button type="submit" class="btn btn-primary"[disabled]="signUpForm.invalid">Set Password</button>
                 </form>
         </div>
     </div>

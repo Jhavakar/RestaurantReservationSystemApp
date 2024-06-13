@@ -1,0 +1,79 @@
+.side-menu {
+    width: 200px;
+    background-color: #2c3e50;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 50px;
+    height: calc(100vh - 100px); /* Adjust based on your navbar height */
+    position: fixed;
+    /* top: 50px;  */
+    left: 0;
+    bottom: 0;
+    z-index: 1;
+    overflow-y: auto; /* To make side menu scrollable if content overflows */
+}
+
+.profile-section {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.profile-picture {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    margin-bottom: 10px;
+}
+
+.user-name {
+    font-size: 20px;
+    margin: 0;
+    color: #f39c12; /* Change to a matching color for better visibility */
+}
+
+.menu-options {
+    list-style: none;
+    padding: 0;
+    width: 100%;
+    text-align: center;
+}
+
+.menu-options li {
+    margin: 10px 0;
+}
+
+.menu-options a {
+    color: white;
+    text-decoration: none;
+    font-size: 18px;
+    display: block;
+    width: 100%;
+    padding: 10px 0;
+}
+
+.menu-options a:hover {
+    background-color: #34495e;
+}
+
+.logout {
+    margin-top: auto;
+}
+
+.logout a {
+    color: white;
+    text-decoration: none;
+    font-size: 18px;
+}
+
+.content {
+    margin-left: 190px;
+    margin-top: 0 !important;
+    box-sizing: border-box;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.content-section.active {
+    display: block;
+}

@@ -1,136 +1,7 @@
-body {
-  font-family: Arial, sans-serif;
-  color: #fff;
-  background-color: #333;
-}
-
-form {
-  padding: 20px;
-  border-radius: 10px;
-  margin: 20px auto;
-}
-
-form div {
-  margin-bottom: 15px;
-}
-
-label {
-  display: block;
-  margin-top: 10px;
-  margin-bottom: 5px;
-  color: #FFA500; /* Orange color */
-}
-
-input[type="text"],
-input[type="email"],
-input[type="date"],
-input[type="number"],
-textarea {
-  padding: 10px;
-  width: -webkit-fill-available;
-  border: 1px solid #FFA500;
-  border-radius: 5px;
-}
-
-.time-slot-container {
-  display: flex;
-  flex-wrap: wrap;
-}
-
-.time-slot-container div {
-  padding: 10px;
-  margin: 5px;
-  border: 1px solid #FFA500; /* Orange color */
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.time-slot-container div.available {
-  background-color: #444;
-  color: #fff;
-}
-
-.time-slot-container div.disabled {
-  background-color: #555;
-  color: #777;
-  cursor: not-allowed;
-}
-
-.time-slot-container div.selected {
-  background-color: #FFA500; /* Orange color */
-  color: #000;
-}
-
-button {
-  background-color: #FFA500; /* Orange color */
-  color: #000;
-  padding: 10px 20px;
-  margin-right: 10px !important;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-button:hover {
-  background-color: #e69500;
-}
-
-button:disabled {
-  background-color: #555;
-  color: #777;
-  cursor: not-allowed;
-}
-
-.confirm-button, .edit-button, .submit-button {
-  display: inline-block;
-  margin-top: 20px;
-}
-
-.error-message {
-  color: red;
-  margin-top: 10px;
-}
-
-form, .confirmation {
-  padding: 20px;
-  border-radius: 10px;
-  max-width: 600px;
-  margin: 20px auto;
-}
-
-form div, .confirmation div {
-  margin-bottom: 15px;
-}
-
-form label, .confirmation label {
-  display: block;
-  margin-bottom: 5px;
-  color: #FFA500; /* Orange color */
-}
-
-form p, .confirmation p {
-  width: 100%;
-  padding: 10px;
-  margin-top: 5px;
-  border: none;
-  border-radius: 5px;
-  background-color: #444;
-  color: #fff;
-}
-
-.confirmation {
-  display: flex;
-  flex-direction: column;
-}
-
-.confirmation .button-group {
-  display: flex;
-  justify-content: space-between;
-}
-
 h3 {
   margin-top: 40px;
 }
+/* checkbox */
 .checkbox-container {
   display: flex;
   align-items: center;
@@ -138,9 +9,10 @@ h3 {
 }
 
 .checkbox-container input[type="checkbox"] {
-  margin-right: 10px; /* Adjust the spacing as needed */
+  margin-right: 10px;
+  margin-top: 10px; 
 }
 
 .checkbox-container label {
-  color: #FFA500; /* Orange color */
+  color: #FFA500;
 }

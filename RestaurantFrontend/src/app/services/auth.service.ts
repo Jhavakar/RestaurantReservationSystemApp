@@ -61,6 +61,15 @@ export class AuthService {
     );
   }
 
+  updatePassword(passwords: { currentPassword: string, newPassword: string }): Observable<any> {
+    return this.http.post<void>(`${this.apiUrl}/Users/update-password`, passwords).pipe(
+    catchError(error => {
+      console.error('Error making request:', error);
+      return throwError(() => new Error(`Request failed with status ${error.status}: ${error.statusText}`));
+    })
+    );
+  }
+
   forgotPassword(data: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/Users/forgot-password`, data).pipe(
       catchError(error => {
@@ -79,6 +88,10 @@ export class AuthService {
     );
   }  
 
+  validatePassword(email: string, password: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/validate-password`, { email, password });
+  }
+
   // Method to get the JWT token from local storage
   getJwtToken(): string | null {
     return localStorage.getItem('auth_token');
@@ -93,5 +106,6 @@ export class AuthService {
   logout(): void {
     localStorage.removeItem('auth_token');
     this.currentUserEmail.next(null);
+    this.router.navigate(['/login']);  // Add this line to redirect to the login page after logout
   }
 }

@@ -4,17 +4,16 @@ import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { CustomersComponent } from './customers/customers.component'; 
 import { ReservationFormComponent } from './reservation-form/reservation-form.component'; 
 import { UpdatePasswordComponent } from './pages/update-password/update-password.component';
-import { SetPasswordComponent } from './set-password/set-password.component';
 import { LoginComponent } from './pages/login/login.component';
 import { ManageReservationComponent } from './manage-reservation/manage-reservation.component';
 import { ReservationOverviewComponent } from './reservation-overview/reservation-overview.component';
-import { EditReservationComponent } from './edit-reservation/edit-reservation.component';
 import { PasswordResetComponent } from './pages/password-reset/password-reset.component';
 import { AuthInterceptor } from './interceptor/auth.interceptors.service';
 import { AuthService } from './services/auth.service';
 import { ReservationDetailsComponent } from './reservation-details/reservation-details.component';
 import { SetupAccountComponent } from './setup-account/setup-account.component';
 import { NavbarComponent } from './components/navbar/navbar.component';
+import { AccountDashboardComponent } from './account-dashboard/account-dashboard.component';
 
 @Component({
   selector: 'app-root',
@@ -27,15 +26,14 @@ import { NavbarComponent } from './components/navbar/navbar.component';
     CustomersComponent,
     ReservationFormComponent,
     UpdatePasswordComponent,
-    SetPasswordComponent,
     LoginComponent,
     ManageReservationComponent,
     ReservationOverviewComponent,
-    EditReservationComponent,
     PasswordResetComponent,
     ReservationDetailsComponent,
     SetupAccountComponent,
     NavbarComponent,
+    AccountDashboardComponent
   ],
   providers: [
     AuthService,

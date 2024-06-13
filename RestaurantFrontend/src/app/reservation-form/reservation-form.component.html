@@ -6,7 +6,7 @@
   <form *ngIf="!showConfirmation" [formGroup]="reservationForm" (ngSubmit)="onSubmit()">
     <div>
       <label for="reservationDate">Reservation Date:</label>
-      <input type="date" formControlName="reservationDate">
+      <input type="date" formControlName="reservationDate" [min]="minDate">
     
       <label for="reservationTime">Reservation Time:</label>
       <div class="time-slot-container">
@@ -26,29 +26,29 @@
     
     <div>
       <label for="firstName">First Name:</label>
-      <input type="text" formControlName="firstName" id="firstName">
+      <input type="text" formControlName="firstName" id="firstName" placeholder="Enter First Name">
     </div>
     <div>
       <label for="lastName">Last Name:</label>
-      <input type="text" formControlName="lastName" id="lastName">
+      <input type="text" formControlName="lastName" id="lastName" placeholder="Enter Last Name">
     </div>
     <div>
       <label for="email">Email Address:</label>
-      <input type="email" id="email" formControlName="email">
+      <input type="email" id="email" formControlName="email" placeholder="Enter Email Address">
     </div>
     <div>
       <label for="phoneNumber">Phone Number (Optional):</label>
-      <input type="text" id="phoneNumber" formControlName="phoneNumber">
+      <input type="text" id="phoneNumber" formControlName="phoneNumber" placeholder="Enter Phone Number">
     </div>
     <div>
       <label for="numberOfGuests">Number of Guests:</label>
-      <input type="number" formControlName="numberOfGuests" id="numberOfGuests">
+      <input type="number" formControlName="numberOfGuests" id="numberOfGuests" placeholder="Enter Number of Guests">
     </div>
     <div>
       <label for="specialRequests">Special Requests:</label>
       <textarea id="specialRequests" formControlName="specialRequests" placeholder="Enter any dietary restrictions, special occasions, or any other preferences here."></textarea>
     </div>
-    <button type="submit">Confirm Details</button>
+    <button type="submit" [disabled]="reservationForm.invalid">Confirm Details</button>
   </form>
   
   <div *ngIf="showConfirmation">
@@ -83,7 +83,7 @@
     </div>
     <div>
       <label>Special Requests:</label>
-      <p>{{ reservationForm.value.specialRequests ? reservationForm.value.specialRequests : 'No special requests' }}</p>
+      <p>{{ reservationForm.value.specialRequests }}</p>
     </div>
     <div class="checkbox-container">
       <input type="checkbox" id="agree" name="agree" [checked]="termsAccepted" (click)="openTermsModal($event)" required>

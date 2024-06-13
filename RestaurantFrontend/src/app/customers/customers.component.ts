@@ -11,6 +11,7 @@ import { CustomerModel } from '../models/customer.model';
   standalone: true,
   imports: [ReactiveFormsModule, CommonModule]
 })
+
 export class CustomersComponent implements OnInit {
   customerForm: FormGroup;
   customers: CustomerModel[] = []; // Store the list of customers
@@ -24,7 +25,7 @@ export class CustomersComponent implements OnInit {
     this.customerForm = this.fb.group({
       firstName: ['', Validators.required],
       lastName: ['', Validators.required],
-      emailAddress: ['', [Validators.required, Validators.email]],
+      email: ['', [Validators.required, Validators.email]],
       phoneNumber: [''],
       password: ['', Validators.required],
     });
@@ -38,7 +39,8 @@ export class CustomersComponent implements OnInit {
     if (this.customerForm.valid) {
       if (this.isEdit && this.editCustomerId !== null) {
         // Update customer
-        this.customerService.updateCustomer(this.editCustomerId, this.customerForm.value).subscribe({
+        const updatedCustomer = { ...this.customerForm.value, id: this.editCustomerId };
+        this.customerService.updateCustomer(updatedCustomer).subscribe({
           next: () => {
             console.log('Customer updated successfully');
             this.resetForm();

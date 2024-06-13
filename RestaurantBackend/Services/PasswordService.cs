@@ -13,7 +13,7 @@ namespace RestaurantBackend.Services
 {
     public interface IPasswordService
     {
-        Task<IdentityResult> ChangePasswordAsync(Customer Customer, string currentPassword, string newPassword);
+        Task<IdentityResult> ChangePasswordAsync(Customer customer, string currentPassword, string newPassword);
         Task<IdentityResult> ResetPasswordAsync(string userId, string token, string newPassword);
         Task<IdentityResult> UpdatePasswordAsync(string userId, string currentPassword, string newPassword);
         Task SendResetPasswordEmailAsync(Customer customer, ForgotPasswordVM forgotPasswordVM);
@@ -54,12 +54,12 @@ namespace RestaurantBackend.Services
             return result;
         }
 
-        public async Task<IdentityResult> ResetPasswordAsync(string email, string token, string newPassword)
+        public async Task<IdentityResult> ResetPasswordAsync(string userId, string token, string newPassword)
         {
-            var customer = await _userManager.FindByEmailAsync(email);
+            var customer = await _userManager.FindByIdAsync(userId);
             if (customer == null)
             {
-                _logger.LogError($"User with email {email} not found.");
+                _logger.LogError($"User with ID {userId} not found.");
                 return IdentityResult.Failed(new IdentityError { Description = "User not found." });
             }
 
@@ -127,8 +127,6 @@ namespace RestaurantBackend.Services
                                 <p>Hello,</p>
                                 <p>Please click on the link below to reset your password, or copy the provided token and paste it on the password reset page:</p>
                                 <p><a href='{passwordResetLink}'>Reset Password</a></p>
-                                <p>If you prefer to enter the token manually, here is your reset token:</p>
-                                <p><strong>Token:</strong> {token}</p>
                                 <p>If you did not request a password reset, please ignore this email or contact support.</p>
                             </body>
                         </html>",

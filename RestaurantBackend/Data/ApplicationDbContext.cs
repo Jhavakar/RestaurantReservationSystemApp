@@ -10,9 +10,6 @@ namespace RestaurantBackend.Data
 
         public DbSet<Reservation> Reservations { get; set; }
         public DbSet<Customer> Customers { get; set; }
-        // public DbSet<Table> Tables { get; set; }
-        // public DbSet<Payment> Payments { get; set; }
-        // public DbSet<Receipt> Receipts { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
@@ -34,10 +31,6 @@ namespace RestaurantBackend.Data
                 .WithMany()
                 .HasForeignKey(r => r.UserId)
                 .IsRequired();
-
-            // Fluent API configurations go here
-            // Example: modelBuilder.Entity<Reservation>().HasKey(r => r.ReservationId);
-            // Configure relationships, indices, etc.
 
             modelBuilder.Entity<Customer>()
             .HasIndex(c => c.Email)
