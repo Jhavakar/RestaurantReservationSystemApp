@@ -6,6 +6,9 @@ import { ReservationService } from '../services/reservation.service';
 import { ReservationModel } from '../models/reservation.model';
 import { Router } from '@angular/router';
 import { ReservationSuccessModalComponent } from '../components/reservation-success-modal/reservation-success-modal.component';
+import { ConfirmationDialogComponent } from '../components/confirmation-dialog/confirmation-dialog.component';
+import { NotificationDialogComponent } from '../components/notification-dialog/notification-dialog.component';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-reservation-overview',
@@ -28,7 +31,8 @@ export class ReservationOverviewComponent implements OnInit {
     private reservationService: ReservationService,
     private authService: AuthService,
     private fb: FormBuilder,
-    private router: Router
+    private router: Router,
+    private dialog: MatDialog
   ) {
 
     const today = new Date();
@@ -53,7 +57,7 @@ export class ReservationOverviewComponent implements OnInit {
   }
 
   generateTimeSlots(): void {
-    for (let hour = 12; hour < 22; hour++) {
+    for (let hour = 12; hour < 23; hour++) {
       const hourString = hour.toString().padStart(2, '0');
       this.timeSlots.push(`${hourString}:00`);
       this.timeSlots.push(`${hourString}:30`);
@@ -109,7 +113,7 @@ export class ReservationOverviewComponent implements OnInit {
     return this.fb.group({
       firstName: [reservation.user.firstName, Validators.required],
       lastName: [reservation.user.lastName, Validators.required],
-      email: [reservation.user.email, [Validators.required, Validators.email]],
+      email: [reservation.user.email, [Validators.required, Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/)]],
       phoneNumber: [reservation.user.phoneNumber],
       reservationDate: [reservation.reservationDateTime.toISOString().split('T')[0], Validators.required],
       reservationTime: [reservation.reservationDateTime.toTimeString().substring(0, 5), Validators.required],
@@ -192,13 +196,24 @@ export class ReservationOverviewComponent implements OnInit {
   }
 
   deleteReservation(reservationId: number | undefined): void {
-    if (reservationId !== undefined && confirm('Are you sure you want to delete this reservation?')) {
-      this.reservationService.deleteReservation(reservationId).subscribe({
-        next: () => {
-          this.reservations = this.reservations.filter(r => r.reservationId !== reservationId);
-          delete this.editingStates[reservationId];
-        },
-        error: (error) => console.error('Error deleting reservation:', error)
+    if (reservationId !== undefined) {
+      const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+        data: {
+          title: 'Confirm Delete',
+          message: 'Are you sure you want to delete this reservation?'
+        }
+      });
+
+      dialogRef.afterClosed().subscribe(result => {
+        if (result) {
+          this.reservationService.deleteReservation(reservationId).subscribe({
+            next: () => {
+              this.reservations = this.reservations.filter(r => r.reservationId !== reservationId);
+              delete this.editingStates[reservationId];
+            },
+            error: (error) => console.error('Error deleting reservation:', error)
+          });
+        }
       });
     }
   }
@@ -212,4 +227,29 @@ export class ReservationOverviewComponent implements OnInit {
   closeModal(): void {
     this.showModal = false;
   }
+
+  openDialog(message: string, afterClosedCallback?: () => void): void {
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      data: { message }
+    });
+
+    dialogRef.afterClosed().subscribe(() => {
+      if (afterClosedCallback) {
+        afterClosedCallback();
+      }
+    });
+  }
+
+  openNotificationDialog(message: string, afterClosedCallback?: () => void): void {
+    const dialogRef = this.dialog.open(NotificationDialogComponent, {
+      data: { message }
+    });
+
+    dialogRef.afterClosed().subscribe(() => {
+      if (afterClosedCallback) {
+        afterClosedCallback();
+      }
+    });
+  }
+
 }

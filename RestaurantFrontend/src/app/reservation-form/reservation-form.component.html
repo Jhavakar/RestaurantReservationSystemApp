@@ -35,6 +35,10 @@
     <div>
       <label for="email">Email Address:</label>
       <input type="email" id="email" formControlName="email" placeholder="Enter Email Address">
+      <div *ngIf="reservationForm.get('email')?.invalid && (reservationForm.get('email')?.dirty || reservationForm.get('email')?.touched)">
+        <small class="error-message" *ngIf="reservationForm.get('email')?.errors?.['required']">Email is required.</small>
+        <small class="error-message" *ngIf="reservationForm.get('email')?.errors?.['pattern']">Invalid email address.</small>
+      </div>
     </div>
     <div>
       <label for="phoneNumber">Phone Number (Optional):</label>
@@ -43,6 +47,10 @@
     <div>
       <label for="numberOfGuests">Number of Guests:</label>
       <input type="number" formControlName="numberOfGuests" id="numberOfGuests" placeholder="Enter Number of Guests">
+      <div *ngIf="reservationForm.get('numberOfGuests')?.invalid && (reservationForm.get('numberOfGuests')?.dirty || reservationForm.get('numberOfGuests')?.touched)">
+        <small class="error-message" *ngIf="reservationForm.get('numberOfGuests')?.errors?.['required']">Number of guests is required.</small>
+        <small class="error-message" *ngIf="reservationForm.get('numberOfGuests')?.errors?.['min']">Invalid number of guests. Must be at least 1.</small>
+      </div>
     </div>
     <div>
       <label for="specialRequests">Special Requests:</label>

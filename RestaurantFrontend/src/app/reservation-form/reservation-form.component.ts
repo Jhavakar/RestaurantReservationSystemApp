@@ -3,8 +3,10 @@ import { FormGroup, FormBuilder, Validators, ReactiveFormsModule } from '@angula
 import { CommonModule } from '@angular/common';
 import { ReservationService } from '../services/reservation.service';
 import { ReservationSuccessModalComponent } from '../components/reservation-success-modal/reservation-success-modal.component';
+import { NotificationDialogComponent } from '../components/notification-dialog/notification-dialog.component';
 import { TermsAndConditionsModalComponent } from '../components/terms-and-conditions-modal/terms-and-conditions-modal.component';
 import { NavbarComponent } from '../components/navbar/navbar.component';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-reservation-form',
@@ -25,11 +27,15 @@ export class ReservationFormComponent implements OnInit {
   termsAccepted = false;
   errorMessage: string | null = null;
 
-  constructor(private fb: FormBuilder, private reservationService: ReservationService) {
+  constructor(
+    private fb: FormBuilder, 
+    private reservationService: ReservationService,
+    private dialog: MatDialog,
+    ) {
     this.reservationForm = this.fb.group({
       firstName: ['', Validators.required],
       lastName: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]], 
+      email: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/)]], 
       phoneNumber: [''],
       reservationDate: ['', Validators.required],
       reservationTime: ['', Validators.required],
@@ -52,7 +58,7 @@ export class ReservationFormComponent implements OnInit {
   }
 
   generateTimeSlots(): void {
-    for (let hour = 12; hour < 22; hour++) {
+    for (let hour = 12; hour < 23; hour++) {
       const hourString = hour.toString().padStart(2, '0');
       this.timeSlots.push(`${hourString}:00`);
       this.timeSlots.push(`${hourString}:30`);
@@ -124,7 +130,12 @@ export class ReservationFormComponent implements OnInit {
     this.reservationService.createReservation(reservationData).subscribe({
       next: (response) => {
         console.log('Reservation confirmed:', response);
-        this.showModal = true;
+        this.dialog.open(NotificationDialogComponent, {
+          data: {
+            title: 'Reservation Confirmed',
+            message: 'Thank you! Your reservation has been confirmed successfully.',
+          }
+        });
       },
       error: (error) => {
         console.error('Error response from server:', error);
@@ -150,5 +161,17 @@ export class ReservationFormComponent implements OnInit {
 
   closeModal(): void {
     this.showModal = false;
+  }
+
+  openDialog(message: string, afterClosedCallback?: () => void): void {
+    const dialogRef = this.dialog.open(NotificationDialogComponent, {
+      data: { message }
+    });
+
+    dialogRef.afterClosed().subscribe(() => {
+      if (afterClosedCallback) {
+        afterClosedCallback();
+      }
+    });
   }
 }

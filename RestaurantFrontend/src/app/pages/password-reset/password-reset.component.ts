@@ -24,7 +24,7 @@ export class PasswordResetComponent {
     private authService: AuthService
   ) {
     this.forgotPasswordForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]]
+      email: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/)]], 
     });
 
     this.resetPasswordForm = this.fb.group({

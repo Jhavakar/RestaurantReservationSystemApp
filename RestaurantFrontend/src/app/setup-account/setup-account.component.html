@@ -9,6 +9,10 @@
                     <div class="form-group">
                         <label for="email">Email Address:</label>
                         <input type="email" formControlName="email" class="form-control" placeholder="Enter Email Address" required>
+                        <div *ngIf="signUpForm.get('email')?.invalid && (signUpForm.get('email')?.dirty || signUpForm.get('email')?.touched)">
+                          <small class="error-message" *ngIf="signUpForm.get('email')?.errors?.['required']">Email is required.</small>
+                          <small class="error-message" *ngIf="signUpForm.get('email')?.errors?.['pattern']">Invalid email address.</small>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label for="newPassword">New Password:</label>
@@ -19,6 +23,9 @@
                         <input type="password" formControlName="confirmPassword" class="form-control" placeholder="Confirm New Password" required>
                     </div>
                     <button type="submit" class="btn btn-primary"[disabled]="signUpForm.invalid">Set Password</button>
+                    <div *ngIf="errorMessage" class="error-message">
+                        {{ errorMessage }}
+                      </div>
                 </form>
         </div>
     </div>

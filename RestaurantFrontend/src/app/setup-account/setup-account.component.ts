@@ -4,35 +4,33 @@ import { AuthService } from '../services/auth.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-
+import { MatDialog } from '@angular/material/dialog';
+import { NotificationDialogComponent } from '../components/notification-dialog/notification-dialog.component';
 @Component({
   selector: 'app-setup-account',
   templateUrl: './setup-account.component.html',
   styleUrls: ['./setup-account.component.css'],
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule, RouterModule]
+  imports: [ReactiveFormsModule, CommonModule, RouterModule,]
 })
 
 export class SetupAccountComponent implements OnInit {
-  loginForm: FormGroup;
   signUpForm: FormGroup;
   isExistingUser = false;
   email = '';
   token = '';
+  errorMessage: string | null = null;
 
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private dialog: MatDialog
   ) {
-    this.loginForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]], 
-      password: ['', [Validators.required]]
-    });
 
     this.signUpForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]], 
+      email: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/)]], 
       newPassword: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', [Validators.required]]
     });
@@ -84,7 +82,7 @@ export class SetupAccountComponent implements OnInit {
     }
 
     if (this.signUpForm.value.newPassword !== this.signUpForm.value.confirmPassword) {
-      alert('Passwords do not match.');
+      this.errorMessage = 'Passwords do not match.';
       return;
     }
   
@@ -98,8 +96,15 @@ export class SetupAccountComponent implements OnInit {
     this.authService.setPassword(formData).subscribe({
       next: (response) => {
         if (response.success) {
-          alert('Password set successfully. Please log in.');
-          this.router.navigate(['/login'], { queryParams: { email: this.email, token: this.token } });
+          this.dialog.open(NotificationDialogComponent, {
+            data: {
+              title: 'Success',
+              message: 'Your password has been set successfully. Please log in to continue.',
+              confirmText: 'OK'
+            }
+          }).afterClosed().subscribe(() => {
+            this.router.navigate(['/login'], { queryParams: { email: this.email, token: this.token } });
+          });             
         } else {
           alert('Failed to set password. Please try again.');
         }
@@ -112,24 +117,14 @@ export class SetupAccountComponent implements OnInit {
   }
   
 
-  onLoginSubmit(): void {
-    if (this.loginForm.invalid) {
-      alert('Please correct the errors on the login form.');
-      return;
-    }
+  openDialog(message: string, afterClosedCallback?: () => void): void {
+    const dialogRef = this.dialog.open(NotificationDialogComponent, {
+      data: { message }
+    });
 
-    const credentials = {
-      email: this.loginForm.get('email')?.value || '', 
-      password: this.loginForm.get('password')?.value || ''
-    };
-
-    this.authService.login(credentials.email, credentials.password).subscribe({
-      next: (response) => {
-        console.log('Logged in successfully:', response);
-      },
-      error: (error) => {
-        console.error('Login failed:', error);
-        alert('Login failed. Please try again.');
+    dialogRef.afterClosed().subscribe(() => {
+      if (afterClosedCallback) {
+        afterClosedCallback();
       }
     });
   }

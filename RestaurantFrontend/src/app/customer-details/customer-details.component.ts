@@ -9,7 +9,7 @@ import { Router } from '@angular/router';
 @Component({
   selector: 'app-customer-details',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule], // Include ReactiveFormsModule here
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './customer-details.component.html',
   styleUrls: ['./customer-details.component.css']
 })
@@ -17,25 +17,20 @@ import { Router } from '@angular/router';
 export class CustomerDetailsComponent implements OnInit {
   customer: CustomerModel | null = null;
   editCustomerForm: FormGroup;
-  passwordForm: FormGroup;
   editingState: boolean = false;
+  errorMessage: string | null = null;
 
   constructor(
     private authService: AuthService,
     private customerService: CustomerService,
     private fb: FormBuilder,
     private router: Router
-
   ) {
     this.editCustomerForm = this.fb.group({
       firstName: ['', Validators.required],
       lastName: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
+      email: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/)]],
       phoneNumber: [''],
-      password: ['', Validators.required],
-    });
-    
-    this.passwordForm = this.fb.group({
       password: ['', Validators.required]
     });
   }
@@ -69,12 +64,11 @@ export class CustomerDetailsComponent implements OnInit {
   }
 
   updateCustomer(): void {
-    if (this.editCustomerForm.valid && this.passwordForm.valid) {
+    if (this.editCustomerForm.valid) {
       const updatedCustomer: CustomerModel = {
         ...this.customer,
         ...this.editCustomerForm.value
       };
-      const password = this.passwordForm.value.password;
 
       console.log('Updating customer:', updatedCustomer);
 
@@ -86,12 +80,17 @@ export class CustomerDetailsComponent implements OnInit {
             this.editingState = false;
             this.notifyParent();
           },
-          error: (error) => console.error('Error updating customer', error)
+          error: (error) => {
+            this.errorMessage = `Error updating customer: ${error.message}`;
+            console.error('Error updating customer', error);
+          }
         });
       } else {
+        this.errorMessage = 'Customer email is missing';
         console.error('Customer email is missing');
       }
     } else {
+      this.errorMessage = 'Form is not valid. Please correct the errors and try again.';
       console.error('Form is not valid');
     }
   }
@@ -102,6 +101,7 @@ export class CustomerDetailsComponent implements OnInit {
 
   cancelEdit(): void {
     this.editingState = false;
+    this.errorMessage = null; // Clear error message
     if (this.customer) {
       this.editCustomerForm.patchValue(this.customer);
     }

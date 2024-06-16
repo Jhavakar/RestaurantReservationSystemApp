@@ -1,14 +1,12 @@
 .hero {
-    display: flex;
     align-items: center;
     justify-content: center;
-    height: 100vh;
     text-align: center;
+    height: max-content;
 }
 
 .main-content {
-    margin: 0 !important;
-    padding: 0 !important;
+    margin: 120px !important;
     background-color: transparent !important;
 }
 
@@ -19,11 +17,10 @@
     border: none;
     cursor: pointer;
     font-size: 1.5em;
-    margin-top: 20px;
+    margin: 20px 0 0 0 !important;
     transition: background-color 0.3s ease;
 }
 
 .book-now:hover {
     background-color: #ff8c00;
 }
-
