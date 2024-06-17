@@ -6,8 +6,13 @@
   <form *ngIf="!showConfirmation" [formGroup]="reservationForm" (ngSubmit)="onSubmit()">
     <div>
       <label for="reservationDate">Reservation Date:</label>
-      <input type="date" formControlName="reservationDate" [min]="minDate">
-    
+      <!-- <input type="date" formControlName="reservationDate" [min]="minDate"> -->
+      <mat-form-field appearance="fill">
+        <input matInput [matDatepicker]="picker" formControlName="reservationDate" [min]="minDate" placeholder="DD-MM-YYYY">
+        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+      </mat-form-field>
+      
       <label for="reservationTime">Reservation Time:</label>
       <div class="time-slot-container">
         <div 
@@ -63,7 +68,7 @@
     <h3>Confirm Your Reservation Details</h3>
     <div>
       <label>Reservation Date:</label>
-      <p>{{ reservationForm.value.reservationDate }}</p>
+      <p>{{ getFormattedDate(reservationForm.get('reservationDate')!.value) }}</p>
     </div>
     <div>
       <label>Reservation Time:</label>

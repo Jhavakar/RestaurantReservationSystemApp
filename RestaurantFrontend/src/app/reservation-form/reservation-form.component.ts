@@ -1,21 +1,22 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { ReservationService } from '../services/reservation.service';
 import { ReservationSuccessModalComponent } from '../components/reservation-success-modal/reservation-success-modal.component';
 import { NotificationDialogComponent } from '../components/notification-dialog/notification-dialog.component';
 import { TermsAndConditionsModalComponent } from '../components/terms-and-conditions-modal/terms-and-conditions-modal.component';
 import { NavbarComponent } from '../components/navbar/navbar.component';
 import { MatDialog } from '@angular/material/dialog';
+import { SharedModule } from '../shared/shared.module';
 
 @Component({
   selector: 'app-reservation-form',
   standalone: true,
   templateUrl: './reservation-form.component.html',
   styleUrls: ['./reservation-form.component.css'],
-  imports: [ReactiveFormsModule, CommonModule, ReservationSuccessModalComponent, TermsAndConditionsModalComponent, NavbarComponent],
+  imports: [ReactiveFormsModule, CommonModule, ReservationSuccessModalComponent, TermsAndConditionsModalComponent, NavbarComponent, SharedModule],
+  providers: [DatePipe]
 })
-
 export class ReservationFormComponent implements OnInit {
   reservationForm: FormGroup;
   showConfirmation = false;
@@ -31,11 +32,12 @@ export class ReservationFormComponent implements OnInit {
     private fb: FormBuilder, 
     private reservationService: ReservationService,
     private dialog: MatDialog,
-    ) {
+    private datePipe: DatePipe
+  ) {
     this.reservationForm = this.fb.group({
       firstName: ['', Validators.required],
       lastName: ['', Validators.required],
-      email: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/)]], 
+      email: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/)]],
       phoneNumber: [''],
       reservationDate: ['', Validators.required],
       reservationTime: ['', Validators.required],
@@ -66,7 +68,8 @@ export class ReservationFormComponent implements OnInit {
   }
 
   fetchReservedSlots(date: string): void {
-    this.reservationService.getAvailableSlots(date).subscribe({
+    const formattedDate = this.formatDateForAPI(date);
+    this.reservationService.getAvailableSlots(formattedDate).subscribe({
       next: (reservedSlots: string[]) => {
         this.reservedSlots = reservedSlots;
       },
@@ -74,6 +77,14 @@ export class ReservationFormComponent implements OnInit {
         console.error('Error fetching reserved slots:', error);
       }
     });
+  }
+
+  formatDateForAPI(date: string): string {
+    const parsedDate = new Date(date);
+    const year = parsedDate.getFullYear();
+    const month = String(parsedDate.getMonth() + 1).padStart(2, '0');
+    const day = String(parsedDate.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 
   isTimeSlotAvailable(timeSlot: string): boolean {
@@ -101,32 +112,33 @@ export class ReservationFormComponent implements OnInit {
 
   onConfirm(): void {
     this.errorMessage = null;
-  
+
     if (!this.termsAccepted) {
       alert('You must accept the terms and conditions');
       return;
     }
-  
+
     const formValues = this.reservationForm.value;
-    const reservationDate = formValues.reservationDate;
+    const reservationDate = this.formatDateForAPI(formValues.reservationDate);
     const reservationTime = formValues.reservationTime;
-    const reservationDateTime = new Date(`${reservationDate}T${reservationTime}:00`);
-  
-    if (!this.isValidTimeSlot(reservationDateTime)) {
+    const reservationDateTime = `${reservationDate}T${reservationTime}:00`;
+
+    if (!this.isValidTimeSlot(new Date(reservationDateTime))) {
       this.errorMessage = "Invalid time slot selected.";
       return;
     }
-  
+
     if (!this.isTimeSlotAvailable(reservationTime)) {
       this.errorMessage = `The time slot ${reservationTime} is unavailable for ${reservationDate}.`;
       return;
     }
-  
+
     const reservationData = {
       ...formValues,
-      reservationDateTime: reservationDateTime
+      reservationDate,
+      reservationDateTime
     };
-  
+
     this.reservationService.createReservation(reservationData).subscribe({
       next: (response) => {
         console.log('Reservation confirmed:', response);
@@ -147,7 +159,7 @@ export class ReservationFormComponent implements OnInit {
         console.error('There was an error!', error);
       }
     });
-  }  
+  }
 
   isValidTimeSlot(dateTime: Date): boolean {
     const minutes = dateTime.getMinutes();
@@ -173,5 +185,9 @@ export class ReservationFormComponent implements OnInit {
         afterClosedCallback();
       }
     });
+  }
+
+  getFormattedDate(date: string): string {
+    return this.datePipe.transform(date, 'dd/MM/yyyy')!;
   }
 }

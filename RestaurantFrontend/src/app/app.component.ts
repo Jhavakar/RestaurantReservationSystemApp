@@ -14,6 +14,23 @@ import { ReservationDetailsComponent } from './reservation-details/reservation-d
 import { SetupAccountComponent } from './setup-account/setup-account.component';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { AccountDashboardComponent } from './account-dashboard/account-dashboard.component';
+import { SharedModule } from './shared/shared.module';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule, DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core';
+import { CustomDateAdapter } from './custom-date-adapter';
+import { DatePipe } from '@angular/common';
+
+export const MY_DATE_FORMATS = {
+  parse: {
+    dateInput: 'DD/MM/YYYY',
+  },
+  display: {
+    dateInput: 'DD/MM/YYYY',
+    monthYearLabel: 'MMM YYYY',
+    dateA11yLabel: 'DD/MM/YYYY',
+    monthYearA11yLabel: 'MMMM YYYY',
+  },
+};
 
 @Component({
   selector: 'app-root',
@@ -33,10 +50,16 @@ import { AccountDashboardComponent } from './account-dashboard/account-dashboard
     ReservationDetailsComponent,
     SetupAccountComponent,
     NavbarComponent,
-    AccountDashboardComponent
+    AccountDashboardComponent,
+    SharedModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
   ],
   providers: [
     AuthService,
+    DatePipe,
+    { provide: DateAdapter, useClass: CustomDateAdapter },
+    { provide: MAT_DATE_FORMATS, useValue: MY_DATE_FORMATS },
     {
       provide: HTTP_INTERCEPTORS,
       useClass: AuthInterceptor,
