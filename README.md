@@ -8,7 +8,6 @@ A web application for managing restaurant reservations, built with C# for the ba
 - [Usage](#usage)
 - [Contributing](#contributing)
 - [License](#license)
-- [Contact](#contact)
 
 ## Installation
 
