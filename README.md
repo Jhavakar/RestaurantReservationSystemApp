@@ -1,27 +1,115 @@
-# RestaurantFrontend
+# Restaurant Reservation System
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 17.3.0.
+A web application for managing restaurant reservations, built with C# for the backend, Angular for the frontend, and SQLite as the database.
 
-## Development server
+## Table of Contents
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+- [Installation](#installation)
+- [Usage](#usage)
+- [Contributing](#contributing)
+- [License](#license)
+- [Contact](#contact)
 
-## Code scaffolding
+## Installation
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+### Backend (C#)
 
-## Build
+1. **Clone the repository**:
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+    ```bash
+    git clone https://github.com/your-username/your-repository.git
+    ```
 
-## Running unit tests
+2. **Navigate to the backend project directory**:
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+    ```bash
+    cd your-repository/backend
+    ```
 
-## Running end-to-end tests
+3. **Restore the .NET dependencies**:
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+    ```bash
+    dotnet restore
+    ```
 
-## Further help
+4. **Run the database migrations** (assuming you are using Entity Framework Core):
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+    ```bash
+    dotnet ef database update
+    ```
+
+5. **Run the backend server**:
+
+    ```bash
+    dotnet run
+    ```
+
+### Frontend (Angular)
+
+1. **Navigate to the frontend project directory**:
+
+    ```bash
+    cd ../frontend
+    ```
+
+2. **Install Angular dependencies**:
+
+    ```bash
+    npm install
+    ```
+
+3. **Run the Angular development server**:
+
+    ```bash
+    ng serve
+    ```
+
+### SQLite Database
+
+1. **Ensure SQLite is installed**:
+    - SQLite comes bundled with most systems. You can check by running `sqlite3` in your command line.
+
+2. **Database setup**:
+    - The database should be automatically set up with the Entity Framework migrations. If not, ensure the connection string in your C# project points to a valid SQLite database file.
+
+## Usage
+
+1. **Access the application**:
+    - Open a web browser and navigate to `http://localhost:4200` for the Angular frontend.
+    - The backend API should be running on `http://localhost:5000` by default.
+
+2. **Using the application**:
+    - Users can sign up, log in, and manage reservations.
+    - Admins can view all reservations and manage users.
+
+## Contributing
+
+Guidelines on how to contribute to the project.
+
+1. **Fork the repository**.
+2. **Create a new branch**:
+
+    ```bash
+    git checkout -b feature/your-feature-name
+    ```
+
+3. **Make your changes**.
+4. **Commit your changes**:
+
+    ```bash
+    git commit -m "Add some feature"
+    ```
+
+5. **Push to the branch**:
+
+    ```bash
+    git push origin feature/your-feature-name
+    ```
+
+6. **Open a pull request**.
+
+## License
+
+Specify the license under which the project is distributed.
+
+Project Link: https://github.com/Jhavakar/RestaurantReservationSystemApp
