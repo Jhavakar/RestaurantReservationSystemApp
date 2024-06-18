@@ -1,15 +1,15 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { AuthService } from '../services/auth.service';
-import { ReservationService } from '../services/reservation.service';
-import { ReservationModel } from '../models/reservation.model';
+import { AuthService } from '../../services/auth.service';
+import { ReservationService } from '../../services/reservation.service';
+import { ReservationModel } from '../../models/reservation.model';
 import { Router } from '@angular/router';
-import { ReservationSuccessModalComponent } from '../components/reservation-success-modal/reservation-success-modal.component';
-import { ConfirmationDialogComponent } from '../components/confirmation-dialog/confirmation-dialog.component';
-import { NotificationDialogComponent } from '../components/notification-dialog/notification-dialog.component';
+import { ReservationSuccessModalComponent } from '../../components/reservation-success-modal/reservation-success-modal.component';
+import { ConfirmationDialogComponent } from '../../components/confirmation-dialog/confirmation-dialog.component';
+import { NotificationDialogComponent } from '../../components/notification-dialog/notification-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
-import { SharedModule } from '../shared/shared.module';
+import { SharedModule } from '../../shared/shared.module';
 
 @Component({
   selector: 'app-reservation-overview',

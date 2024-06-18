@@ -2,12 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule, DatePipe } from '@angular/common';
 import { MatDialog } from '@angular/material/dialog';
-import { ReservationService } from '../services/reservation.service';
-import { ReservationSuccessModalComponent } from '../components/reservation-success-modal/reservation-success-modal.component';
-import { NotificationDialogComponent } from '../components/notification-dialog/notification-dialog.component';
-import { TermsAndConditionsModalComponent } from '../components/terms-and-conditions-modal/terms-and-conditions-modal.component';
-import { NavbarComponent } from '../components/navbar/navbar.component';
-import { SharedModule } from '../shared/shared.module';
+import { ReservationService } from '../../services/reservation.service';
+import { ReservationSuccessModalComponent } from '../../components/reservation-success-modal/reservation-success-modal.component';
+import { NotificationDialogComponent } from '../../components/notification-dialog/notification-dialog.component';
+import { TermsAndConditionsModalComponent } from '../../components/terms-and-conditions-modal/terms-and-conditions-modal.component';
+import { NavbarComponent } from '../../components/navbar/navbar.component';
+import { SharedModule } from '../../shared/shared.module';
 
 @Component({
   selector: 'app-reservation-form',

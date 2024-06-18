@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { AuthService } from '../services/auth.service';
-import { CustomerService } from '../services/customer.service';
-import { CustomerModel } from '../models/customer.model';
+import { AuthService } from '../../services/auth.service';
+import { CustomerService } from '../../services/customer.service';
+import { CustomerModel } from '../../models/customer.model';
 import { Router } from '@angular/router';
 
 @Component({

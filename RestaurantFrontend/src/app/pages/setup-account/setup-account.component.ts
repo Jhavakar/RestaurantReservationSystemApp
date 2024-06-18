@@ -4,8 +4,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
-import { NotificationDialogComponent } from '../components/notification-dialog/notification-dialog.component';
-import { AuthService } from '../services/auth.service';
+import { NotificationDialogComponent } from '../../components/notification-dialog/notification-dialog.component';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-setup-account',

@@ -1,24 +1,19 @@
 // src/app/app.routes.ts
 import { Routes } from '@angular/router';
-import { CustomersComponent } from './customers/customers.component';
-import { ReservationFormComponent } from './reservation-form/reservation-form.component';
+import { ReservationFormComponent } from './pages/reservation-form/reservation-form.component';
 import { LoginComponent } from './pages/login/login.component';
 import { UpdatePasswordComponent } from './pages/update-password/update-password.component';
-import { ManageReservationComponent } from './manage-reservation/manage-reservation.component';
-import { ReservationOverviewComponent } from './reservation-overview/reservation-overview.component';
+import { ManageReservationComponent } from './pages/manage-reservation/manage-reservation.component';
+import { ReservationOverviewComponent } from './pages/reservation-overview/reservation-overview.component';
 import { PasswordResetComponent } from './pages/password-reset/password-reset.component';
-import { ReservationDetailsComponent } from './reservation-details/reservation-details.component';
-import { SetupAccountComponent } from './setup-account/setup-account.component';
+import { ReservationDetailsComponent } from './pages/reservation-details/reservation-details.component';
+import { SetupAccountComponent } from './pages/setup-account/setup-account.component';
 import { HomeComponent } from './pages/home/home.component';
-import { AccountDashboardComponent } from './account-dashboard/account-dashboard.component';
+import { AccountDashboardComponent } from './pages/account-dashboard/account-dashboard.component';
 
 export const routes: Routes = [
-  // Uncommenting this route for redirecting to '/customers' by default
-  // { path: '', redirectTo: '/customers', pathMatch: 'full' },
-  // Re-adding the CustomersComponent route
   { path: '', redirectTo: '/home', pathMatch: 'full' }, // Default route
   { path: 'home', component: HomeComponent, title: 'Home' },
-  { path: 'customers', component: CustomersComponent, title: 'Customers' },
   // Your ReservationFormComponent route
   { path: 'reserve', component: ReservationFormComponent, title: 'Make a Reservation' },
   { path: 'login', component: LoginComponent, title: 'Login to Account' },

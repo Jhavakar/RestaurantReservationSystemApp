@@ -2,10 +2,10 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CustomerDetailsComponent } from '../customer-details/customer-details.component';
 import { ReservationOverviewComponent } from '../reservation-overview/reservation-overview.component';
-import { AuthService } from '../services/auth.service';
-import { CustomerService } from '../services/customer.service';
+import { AuthService } from '../../services/auth.service';
+import { CustomerService } from '../../services/customer.service';
 import { Router } from '@angular/router';
-import { CustomerModel } from '../models/customer.model';
+import { CustomerModel } from '../../models/customer.model';
 
 @Component({
     selector: 'app-account-dashboard',

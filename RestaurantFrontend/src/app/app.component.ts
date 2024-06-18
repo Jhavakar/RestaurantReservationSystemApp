@@ -1,19 +1,18 @@
 import { Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
-import { CustomersComponent } from './customers/customers.component'; 
-import { ReservationFormComponent } from './reservation-form/reservation-form.component'; 
+import { ReservationFormComponent } from './pages/reservation-form/reservation-form.component'; 
 import { UpdatePasswordComponent } from './pages/update-password/update-password.component';
 import { LoginComponent } from './pages/login/login.component';
-import { ManageReservationComponent } from './manage-reservation/manage-reservation.component';
-import { ReservationOverviewComponent } from './reservation-overview/reservation-overview.component';
+import { ManageReservationComponent } from './pages/manage-reservation/manage-reservation.component';
+import { ReservationOverviewComponent } from './pages/reservation-overview/reservation-overview.component';
 import { PasswordResetComponent } from './pages/password-reset/password-reset.component';
 import { AuthInterceptor } from './interceptor/auth.interceptors.service';
 import { AuthService } from './services/auth.service';
-import { ReservationDetailsComponent } from './reservation-details/reservation-details.component';
-import { SetupAccountComponent } from './setup-account/setup-account.component';
+import { ReservationDetailsComponent } from './pages/reservation-details/reservation-details.component';
+import { SetupAccountComponent } from './pages/setup-account/setup-account.component';
 import { NavbarComponent } from './components/navbar/navbar.component';
-import { AccountDashboardComponent } from './account-dashboard/account-dashboard.component';
+import { AccountDashboardComponent } from './pages/account-dashboard/account-dashboard.component';
 import { SharedModule } from './shared/shared.module';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule, DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core';
@@ -40,7 +39,6 @@ export const MY_DATE_FORMATS = {
   imports: [
     RouterModule, // Use your routes with RouterModule
     HttpClientModule,
-    CustomersComponent,
     ReservationFormComponent,
     UpdatePasswordComponent,
     LoginComponent,
