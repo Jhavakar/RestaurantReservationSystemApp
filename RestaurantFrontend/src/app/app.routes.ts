@@ -10,6 +10,7 @@ import { ReservationDetailsComponent } from './pages/reservation-details/reserva
 import { SetupAccountComponent } from './pages/setup-account/setup-account.component';
 import { HomeComponent } from './pages/home/home.component';
 import { AccountDashboardComponent } from './pages/account-dashboard/account-dashboard.component';
+import { AboutUsComponent } from './pages/about-us/about-us.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/home', pathMatch: 'full' }, // Default route
@@ -24,5 +25,5 @@ export const routes: Routes = [
   { path: 'reservation-details', component: ReservationDetailsComponent, title: 'Reservation Details'},
   { path: 'setup-account', component: SetupAccountComponent, title: 'Setup Account'},
   { path: 'account-dashboard', component: AccountDashboardComponent, title: 'Account Dashboard'},
-  // Define more routes as needed
+  { path: 'about-us', component: AboutUsComponent, title: 'About Us'},
 ];

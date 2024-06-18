@@ -13,6 +13,7 @@ import { ReservationDetailsComponent } from './pages/reservation-details/reserva
 import { SetupAccountComponent } from './pages/setup-account/setup-account.component';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { AccountDashboardComponent } from './pages/account-dashboard/account-dashboard.component';
+import { AboutUsComponent } from './pages/about-us/about-us.component';
 import { SharedModule } from './shared/shared.module';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule, DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core';
@@ -49,6 +50,7 @@ export const MY_DATE_FORMATS = {
     SetupAccountComponent,
     NavbarComponent,
     AccountDashboardComponent,
+    AboutUsComponent,
     SharedModule,
     MatDatepickerModule,
     MatNativeDateModule,
