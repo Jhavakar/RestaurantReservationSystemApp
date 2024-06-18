@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormGroup, Validators, ReactiveFormsModule, FormBuilder } from '@angular/forms';
+import { FormGroup, Validators, FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from '../services/auth.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -60,14 +60,14 @@ export class ManageReservationComponent implements OnInit {
         this.reservationDetails = response.reservationDetails || null;
         this.firstName = response.firstName || 'N/A';
         this.lastName = response.lastName || 'N/A';
-        
+
         if (this.isExistingUser) {
           this.loginForm.patchValue({ email: this.email });
         } else {
           this.manageReservationForm.patchValue({ email: this.email });
         }
       },
-      error: error => {
+      error: () => {
         alert('Verification failed. Please check the link or try again.');
       }
     });

@@ -1,12 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule, DatePipe } from '@angular/common';
+import { MatDialog } from '@angular/material/dialog';
 import { ReservationService } from '../services/reservation.service';
 import { ReservationSuccessModalComponent } from '../components/reservation-success-modal/reservation-success-modal.component';
 import { NotificationDialogComponent } from '../components/notification-dialog/notification-dialog.component';
 import { TermsAndConditionsModalComponent } from '../components/terms-and-conditions-modal/terms-and-conditions-modal.component';
 import { NavbarComponent } from '../components/navbar/navbar.component';
-import { MatDialog } from '@angular/material/dialog';
 import { SharedModule } from '../shared/shared.module';
 
 @Component({
@@ -17,11 +17,12 @@ import { SharedModule } from '../shared/shared.module';
   imports: [ReactiveFormsModule, CommonModule, ReservationSuccessModalComponent, TermsAndConditionsModalComponent, NavbarComponent, SharedModule],
   providers: [DatePipe]
 })
+
 export class ReservationFormComponent implements OnInit {
   reservationForm: FormGroup;
   showConfirmation = false;
   minDate: string;
-  timeSlots: string[] = [];
+  timeSlots: { time: string, disabled: boolean }[] = [];
   reservedSlots: string[] = [];
   showModal = false;
   showTermsModal = false;
@@ -48,22 +49,34 @@ export class ReservationFormComponent implements OnInit {
     this.reservationForm.get('reservationDate')!.valueChanges.subscribe(date => {
       if (date) {
         this.fetchReservedSlots(date);
+        this.generateTimeSlots(date);
       }
     });
 
     const today = new Date();
     this.minDate = today.toISOString().split('T')[0];
+    this.generateTimeSlots(this.minDate); 
   }
 
   ngOnInit(): void {
-    this.generateTimeSlots();
+    this.generateTimeSlots(this.minDate);
   }
 
-  generateTimeSlots(): void {
+  generateTimeSlots(date: string): void {
+    this.timeSlots = [];
+    const now = new Date();
+    const selectedDate = new Date(date);
+    const currentDate = this.datePipe.transform(selectedDate, 'yyyy-MM-dd');
+
     for (let hour = 12; hour < 23; hour++) {
       const hourString = hour.toString().padStart(2, '0');
-      this.timeSlots.push(`${hourString}:00`);
-      this.timeSlots.push(`${hourString}:30`);
+      const times = [`${hourString}:00`, `${hourString}:30`];
+
+      times.forEach(time => {
+        const slotDateTime = new Date(`${currentDate}T${time}:00`);
+        const isPast = selectedDate.toDateString() === now.toDateString() && now > slotDateTime;
+        this.timeSlots.push({ time, disabled: isPast });
+      });
     }
   }
 
@@ -92,7 +105,7 @@ export class ReservationFormComponent implements OnInit {
   }
 
   selectTimeSlot(timeSlot: string): void {
-    if (this.isTimeSlotAvailable(timeSlot)) {
+    if (this.isTimeSlotAvailable(timeSlot) && !this.timeSlots.find(slot => slot.time === timeSlot)?.disabled) {
       this.reservationForm.patchValue({ reservationTime: timeSlot });
     }
   }
@@ -156,7 +169,6 @@ export class ReservationFormComponent implements OnInit {
         } else {
           this.errorMessage = 'There was an error creating the reservation.';
         }
-        console.error('There was an error!', error);
       }
     });
   }

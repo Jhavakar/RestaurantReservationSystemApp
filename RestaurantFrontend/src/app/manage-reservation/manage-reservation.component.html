@@ -4,22 +4,22 @@
     <div class="container my-5">
         <header class="mb-4">
             <h1 class="display-4">Manage Your Reservation</h1>
-            <p>Welcome, <span id="guestName">Guest</span>!</p>
+            <p>Welcome, <span id="guestName">{{ firstName }} {{ lastName }}</span>!</p>
         </header>
     
         <!-- Reservation Details Section -->
         <div id="reservation-details" class="card mb-4" *ngIf="reservationDetails">
             <div class="card-body">
-              <h2 class="card-title">Reservation Details</h2>
-              <ul class="list-group">
-                <li class="list-group-item">First Name: {{ firstName }}</li>
-                <li class="list-group-item">Last Name: {{ lastName }}</li>
-                <li class="list-group-item">Date and Time: {{ reservationDetails.reservationDateTime | date: 'short' }}</li>
-                <li class="list-group-item">Number of Guests: {{ reservationDetails.numberOfGuests }}</li>
-                <li class="list-group-item">Special Requests: {{ reservationDetails.specialRequests ? reservationDetails.specialRequests : 'No special requests' }}</li>
-              </ul>
+                <h2 class="card-title">Reservation Details</h2>
+                <ul class="list-group">
+                    <li class="list-group-item">First Name: {{ firstName }}</li>
+                    <li class="list-group-item">Last Name: {{ lastName }}</li>
+                    <p class="list-group-item">{{ reservationDetails.reservationDateTime | date: 'dd/MM/yyyy, h:mm a' }}</p>
+                    <li class="list-group-item">Number of Guests: {{ reservationDetails.numberOfGuests }}</li>
+                    <li class="list-group-item">Special Requests: {{ reservationDetails.specialRequests || 'No special requests' }}</li>
+                </ul>
             </div>
-          </div>                
+        </div>
     
         <!-- Conditionally display account setup or login based on `isExistingUser` -->
         <div *ngIf="!isExistingUser" class="card-body">
@@ -27,15 +27,15 @@
             <form [formGroup]="manageReservationForm" (ngSubmit)="onManageReservationSubmit()">
                 <div class="form-group">
                     <label for="email">Email Address:</label>
-                    <input type="email" formControlName="email" class="form-control" required>
+                    <input type="email" id="email" formControlName="email" class="form-control" required>
                 </div>
                 <div class="form-group">
                     <label for="newPassword">New Password:</label>
-                    <input type="password" formControlName="newPassword" class="form-control" required>
+                    <input type="password" id="newPassword" formControlName="newPassword" class="form-control" required>
                 </div>
                 <div class="form-group">
                     <label for="confirmPassword">Confirm Password:</label>
-                    <input type="password" formControlName="confirmPassword" class="form-control" required>
+                    <input type="password" id="confirmPassword" formControlName="confirmPassword" class="form-control" required>
                 </div>
                 <button type="submit" class="btn btn-primary">Set Password</button>
             </form>
@@ -46,11 +46,11 @@
             <form [formGroup]="loginForm" (ngSubmit)="onLoginSubmit()">
                 <div class="form-group">
                     <label for="email">Email Address:</label>
-                    <input type="email" formControlName="email" class="form-control" required>
+                    <input type="email" id="email" formControlName="email" class="form-control" required>
                 </div>
                 <div class="form-group">
                     <label for="password">Password:</label>
-                    <input type="password" formControlName="password" class="form-control" required>
+                    <input type="password" id="password" formControlName="password" class="form-control" required>
                 </div>
                 <button type="submit" class="btn btn-primary">Log In</button>
             </form>

@@ -48,7 +48,7 @@ export class ReservationDetailsComponent implements OnInit {
         this.lastName = response.lastName || 'N/A';
         this.isExistingUser = response.hasPassword || false;
       },
-      error: error => {
+      error: () => {
         alert('Verification failed. Please check the link or try again.');
       }
     });

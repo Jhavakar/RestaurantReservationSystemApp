@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../services/auth.service';
 import { ReservationService } from '../services/reservation.service';
@@ -9,13 +9,15 @@ import { ReservationSuccessModalComponent } from '../components/reservation-succ
 import { ConfirmationDialogComponent } from '../components/confirmation-dialog/confirmation-dialog.component';
 import { NotificationDialogComponent } from '../components/notification-dialog/notification-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
+import { SharedModule } from '../shared/shared.module';
 
 @Component({
   selector: 'app-reservation-overview',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule, ReservationSuccessModalComponent],
+  imports: [ReactiveFormsModule, CommonModule, ReservationSuccessModalComponent, SharedModule],
   templateUrl: './reservation-overview.component.html',
-  styleUrls: ['./reservation-overview.component.css']
+  styleUrls: ['./reservation-overview.component.css'],
+  providers: [DatePipe]
 })
 
 export class ReservationOverviewComponent implements OnInit {
@@ -23,7 +25,7 @@ export class ReservationOverviewComponent implements OnInit {
   editForms: { [key: number]: FormGroup } = {};
   editingStates: { [key: number]: boolean } = {};
   minDate: string;
-  timeSlots: string[] = [];
+  timeSlots: { time: string, disabled: boolean }[] = [];
   reservedSlots: string[] = [];
   showModal = false;
 
@@ -32,7 +34,8 @@ export class ReservationOverviewComponent implements OnInit {
     private authService: AuthService,
     private fb: FormBuilder,
     private router: Router,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private datePipe: DatePipe
   ) {
 
     const today = new Date();
@@ -57,15 +60,24 @@ export class ReservationOverviewComponent implements OnInit {
   }
 
   generateTimeSlots(): void {
+    const now = new Date();
+    const currentDate = this.datePipe.transform(now, 'yyyy-MM-dd');
+    
     for (let hour = 12; hour < 23; hour++) {
       const hourString = hour.toString().padStart(2, '0');
-      this.timeSlots.push(`${hourString}:00`);
-      this.timeSlots.push(`${hourString}:30`);
+      const timeSlots = [`${hourString}:00`, `${hourString}:30`];
+      
+      timeSlots.forEach(time => {
+        const slotDateTime = new Date(`${currentDate}T${time}:00`);
+        const isPast = now > slotDateTime;
+        this.timeSlots.push({ time, disabled: isPast });
+      });
     }
   }
 
   fetchReservedSlots(date: string): void {
-    this.reservationService.getAvailableSlots(date).subscribe({
+    const formattedDate = this.formatDateForAPI(date);
+    this.reservationService.getAvailableSlots(formattedDate).subscribe({
       next: (reservedSlots: any) => {
         this.reservedSlots = reservedSlots.map((time: any) => {
           const dateTime = new Date(time);
@@ -78,12 +90,20 @@ export class ReservationOverviewComponent implements OnInit {
     });
   }
 
+  formatDateForAPI(date: string): string {
+    const parsedDate = new Date(date);
+    const year = parsedDate.getFullYear();
+    const month = String(parsedDate.getMonth() + 1).padStart(2, '0');
+    const day = String(parsedDate.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
   isTimeSlotAvailable(timeSlot: string): boolean {
     return !this.reservedSlots.includes(timeSlot);
   }
 
   selectTimeSlot(timeSlot: string, reservationId: number): void {
-    if (this.isTimeSlotAvailable(timeSlot)) {
+    if (this.isTimeSlotAvailable(timeSlot) && !this.timeSlots.find(slot => slot.time === timeSlot)?.disabled) {
       this.editForms[reservationId].patchValue({ reservationTime: timeSlot });
     }
   }
@@ -115,7 +135,7 @@ export class ReservationOverviewComponent implements OnInit {
       lastName: [reservation.user.lastName, Validators.required],
       email: [reservation.user.email, [Validators.required, Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/)]],
       phoneNumber: [reservation.user.phoneNumber],
-      reservationDate: [reservation.reservationDateTime.toISOString().split('T')[0], Validators.required],
+      reservationDate: [this.datePipe.transform(reservation.reservationDateTime, 'yyyy-MM-dd'), Validators.required],
       reservationTime: [reservation.reservationDateTime.toTimeString().substring(0, 5), Validators.required],
       numberOfGuests: [reservation.numberOfGuests, [Validators.required, Validators.min(1)]],
       specialRequests: [reservation.specialRequests],
@@ -146,8 +166,8 @@ export class ReservationOverviewComponent implements OnInit {
       return;
     }
 
-    const reservationDate = updatedData.reservationDate; // 'yyyy-MM-dd' format
-    const reservationTime = updatedData.reservationTime; // 'HH:mm' format
+    const reservationDate = this.formatDateForAPI(updatedData.reservationDate);
+    const reservationTime = updatedData.reservationTime;
     const reservationDateTime = new Date(`${reservationDate}T${reservationTime}:00`);
 
     if (!this.isValidTimeSlot(reservationDateTime)) {
@@ -252,4 +272,7 @@ export class ReservationOverviewComponent implements OnInit {
     });
   }
 
+  getFormattedDate(date: string): string {
+    return this.datePipe.transform(date, 'dd/MM/yyyy')!;
+  }
 }

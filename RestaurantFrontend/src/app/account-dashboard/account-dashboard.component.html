@@ -1,26 +1,26 @@
 <div class="dashboard">
-    <div class="side-menu">
+  <div class="side-menu">
       <div class="profile-section">
-        <h2 *ngIf="customer?.firstName" class="user-name">{{customer?.firstName}} {{customer?.lastName}}</h2>
+          <h2 *ngIf="customer?.firstName" class="user-name">{{customer?.firstName}} {{customer?.lastName}}</h2>
       </div>
       <ul class="menu-options">
-        <li>
-          <button (click)="activeSection = 'customer-details'">Customer Details</button>
-        </li>
-        <li>
-          <button (click)="activeSection = 'reservation-overview'">Reservations</button>
-        </li>
+          <li>
+              <button (click)="showSection('customer-details')">Customer Details</button>
+          </li>
+          <li>
+              <button (click)="showSection('reservation-overview')">Reservations</button>
+          </li>
       </ul>
       <div class="logout">
-        <button (click)="logout()">Logout</button>
+          <button (click)="logout()">Logout</button>
       </div>
-    </div>
-    <div class="content">
+  </div>
+  <div class="content">
       <div *ngIf="activeSection === 'customer-details'" class="content-section active">
-        <app-customer-details></app-customer-details>
+          <app-customer-details></app-customer-details>
       </div>
       <div *ngIf="activeSection === 'reservation-overview'" class="content-section active">
-        <app-reservation-overview></app-reservation-overview>
+          <app-reservation-overview></app-reservation-overview>
       </div>
-    </div>
+  </div>
 </div>

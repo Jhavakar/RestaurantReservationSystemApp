@@ -1,101 +1,105 @@
-<div >
-    <h1 class="display-4">Welcome back!</h1>
-    <p>Your reservation details are below:</p>
+<div>
+  <h1 class="display-4">Welcome back!</h1>
+  <p>Your reservation details are below:</p>
 
   <div *ngFor="let reservation of reservations" class="card mb-4">
-    <div class="card-body">
-      <h2 class="card-title">Reservation Summary</h2>
-      <ul *ngIf="reservation.reservationId !== undefined && !editingStates[reservation.reservationId]" class="list-group">
-        <div class="inline-container">
-          <label for="firstName">First Name:</label>
-          <p class="list-group-item">{{reservation.user.firstName }}</p>
-        </div> 
-        <div class="inline-container">
-          <label for="lastName">Last Name:</label>
-          <p class="list-group-item">{{reservation.user.lastName }}</p>
-        </div>  
-        <div class="inline-container">
-          <label for="email">Email Address:</label>
-          <p class="list-group-item">{{reservation.user.email }}</p>
-        </div>  
-        <div class="inline-container">
-          <label for="phoneNumber">Phone Number (Optional):</label>
-          <p class="list-group-item">{{reservation.user.phoneNumber }}</p>
-        </div>        
-        <div class="inline-container">
-          <label for="dateTime">Date and Time:</label>
-          <p class="list-group-item">{{ reservation.reservationDateTime | date: 'short' }}</p>
-        </div>
-        <div class="inline-container">
-          <label for="numberOfGuests">Number of Guests:</label>
-          <p class="list-group-item">{{reservation.numberOfGuests }}</p>
-        </div>
-        <div class="inline-container">
-          <label for="specialRequests">Special Requests:</label>
-          <p class="list-group-item">{{ reservation.specialRequests }}</p>
-        </div>        
-      </ul>
+      <div class="card-body">
+          <h2 class="card-title">Reservation Summary</h2>
+          <ul *ngIf="reservation.reservationId !== undefined && !editingStates[reservation.reservationId]" class="list-group">
+              <div class="inline-container">
+                  <label for="firstName">First Name:</label>
+                  <p class="list-group-item">{{ reservation.user.firstName }}</p>
+              </div>
+              <div class="inline-container">
+                  <label for="lastName">Last Name:</label>
+                  <p class="list-group-item">{{ reservation.user.lastName }}</p>
+              </div>
+              <div class="inline-container">
+                  <label for="email">Email Address:</label>
+                  <p class="list-group-item">{{ reservation.user.email }}</p>
+              </div>
+              <div class="inline-container">
+                  <label for="phoneNumber">Phone Number (Optional):</label>
+                  <p class="list-group-item">{{ reservation.user.phoneNumber }}</p>
+              </div>
+              <div class="inline-container">
+                  <label for="dateTime">Date and Time:</label>
+                  <p class="list-group-item">{{ reservation.reservationDateTime | date: 'dd/MM/yyyy, h:mm a' }}</p>
+              </div>
+              <div class="inline-container">
+                  <label for="numberOfGuests">Number of Guests:</label>
+                  <p class="list-group-item">{{ reservation.numberOfGuests }}</p>
+              </div>
+              <div class="inline-container">
+                  <label for="specialRequests">Special Requests:</label>
+                  <p class="list-group-item">{{ reservation.specialRequests }}</p>
+              </div>
+          </ul>
 
-      <form *ngIf="reservation.reservationId !== undefined && editingStates[reservation.reservationId]" [formGroup]="editForms[reservation.reservationId]" (ngSubmit)="updateReservation(reservation.reservationId)">
-        <div class="form-group">
-          <label>First Name:</label>
-          <input type="text" class="form-control" formControlName="firstName" readonly>
-        </div>
-        <div class="form-group">
-          <label>Last Name:</label>
-          <input type="text" class="form-control" formControlName="lastName" readonly>
-        </div>
-        <div class="form-group">
-          <label for="email">Email Address:</label>
-          <input type="email" id="email" formControlName="email" placeholder="Enter Email Address">
-          <div *ngIf="editForms[reservation.reservationId].get('email')?.invalid && (editForms[reservation.reservationId].get('email')?.dirty || editForms[reservation.reservationId].get('email')?.touched)">
-            <small class="error-message" *ngIf="editForms[reservation.reservationId].get('email')?.errors?.['required']">Email is required.</small>
-            <small class="error-message" *ngIf="editForms[reservation.reservationId].get('email')?.errors?.['pattern']">Invalid email address.</small>
-          </div>
-        </div>
-        <div class="form-group">
-          <label>Phone Number (Optional):</label>
-          <input type="text" class="form-control" formControlName="phoneNumber" placeholder="Enter phone number">
-        </div>
-        <div class="form-group">
-          <label for="reservationDate">Reservation Date:</label>
-          <input type="date" formControlName="reservationDate" [min]="minDate">
-        </div>
-        <div class="form-group">
-          <label for="reservationTime">Reservation Time:</label>
-          <div class="time-slot-container">
-            <div 
-              *ngFor="let timeSlot of timeSlots"
-              [ngClass]="{
-                'available': isTimeSlotAvailable(timeSlot),
-                'disabled': !isTimeSlotAvailable(timeSlot),
-                'selected': editForms[reservation.reservationId].value.reservationTime === timeSlot
-              }"
-              (click)="selectTimeSlot(timeSlot, reservation.reservationId)"
-            >
-              {{ timeSlot }}
-            </div>
-          </div>
-        </div>  
-        <div class="form-group">
-          <label for="numberOfGuests">Number of Guests:</label>
-          <input type="number" formControlName="numberOfGuests" id="numberOfGuests" placeholder="Enter Number of Guests">
-          <div *ngIf="editForms[reservation.reservationId].get('numberOfGuests')?.invalid && (editForms[reservation.reservationId].get('numberOfGuests')?.dirty || editForms[reservation.reservationId].get('numberOfGuests')?.touched)">
-            <small class="error-message" *ngIf="editForms[reservation.reservationId].get('numberOfGuests')?.errors?.['required']">Number of guests is required.</small>
-            <small class="error-message" *ngIf="editForms[reservation.reservationId].get('numberOfGuests')?.errors?.['min']">Invalid number of guests. Must be at least 1.</small>
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="specialRequests">Special Requests:</label>
-          <textarea type="text" class="form-control" formControlName="specialRequests" placeholder="Enter any dietary restrictions, special occasions, or any other preferences here."></textarea>
-        </div>
-        <button type="submit" class="btn btn-success">Update Reservation</button>
-        <button type="button" class="btn btn-secondary" (click)="cancelEdit(reservation.reservationId)">Cancel</button>
-      </form>         
-      
-      <button *ngIf="reservation.reservationId !== undefined && !editingStates[reservation.reservationId]" class="btn btn-primary" (click)="editReservation(reservation.reservationId)">Edit Reservation</button>
-      <button *ngIf="reservation.reservationId !== undefined && !editingStates[reservation.reservationId]" class="btn btn-danger" (click)="deleteReservation(reservation.reservationId)">Cancel Reservation</button>      
-    </div>
+          <form *ngIf="reservation.reservationId !== undefined && editingStates[reservation.reservationId]" [formGroup]="editForms[reservation.reservationId]" (ngSubmit)="updateReservation(reservation.reservationId)">
+              <div class="form-group">
+                  <label>First Name:</label>
+                  <input type="text" class="form-control" formControlName="firstName" readonly>
+              </div>
+              <div class="form-group">
+                  <label>Last Name:</label>
+                  <input type="text" class="form-control" formControlName="lastName" readonly>
+              </div>
+              <div class="form-group">
+                  <label for="email">Email Address:</label>
+                  <input type="email" id="email" formControlName="email" placeholder="Enter Email Address">
+                  <div *ngIf="editForms[reservation.reservationId].get('email')?.invalid && (editForms[reservation.reservationId].get('email')?.dirty || editForms[reservation.reservationId].get('email')?.touched)">
+                      <small class="error-message" *ngIf="editForms[reservation.reservationId].get('email')?.errors?.['required']">Email is required.</small>
+                      <small class="error-message" *ngIf="editForms[reservation.reservationId].get('email')?.errors?.['pattern']">Invalid email address.</small>
+                  </div>
+              </div>
+              <div class="form-group">
+                  <label>Phone Number (Optional):</label>
+                  <input type="text" class="form-control" formControlName="phoneNumber" placeholder="Enter phone number">
+              </div>
+              <div class="form-group">
+                  <label for="reservationDate">Reservation Date:</label>
+                  <mat-form-field appearance="fill">
+                      <input matInput [matDatepicker]="picker" formControlName="reservationDate" [min]="minDate" placeholder="DD-MM-YYYY">
+                      <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                      <mat-datepicker #picker></mat-datepicker>
+                  </mat-form-field>
+              </div>
+              <div class="form-group">
+                  <label for="reservationTime">Reservation Time:</label>
+                  <div class="time-slot-container">
+                      <div 
+                          *ngFor="let timeSlot of timeSlots"
+                          [ngClass]="{
+                              'available': isTimeSlotAvailable(timeSlot.time) && !timeSlot.disabled,
+                              'disabled': !isTimeSlotAvailable(timeSlot.time) || timeSlot.disabled,
+                              'selected': editForms[reservation.reservationId].value.reservationTime === timeSlot.time
+                          }"
+                          (click)="selectTimeSlot(timeSlot.time, reservation.reservationId)"
+                      >
+                          {{ timeSlot.time }}
+                      </div>
+                  </div>
+              </div>
+              <div class="form-group">
+                  <label for="numberOfGuests">Number of Guests:</label>
+                  <input type="number" formControlName="numberOfGuests" id="numberOfGuests" placeholder="Enter Number of Guests">
+                  <div *ngIf="editForms[reservation.reservationId].get('numberOfGuests')?.invalid && (editForms[reservation.reservationId].get('numberOfGuests')?.dirty || editForms[reservation.reservationId].get('numberOfGuests')?.touched)">
+                      <small class="error-message" *ngIf="editForms[reservation.reservationId].get('numberOfGuests')?.errors?.['required']">Number of guests is required.</small>
+                      <small class="error-message" *ngIf="editForms[reservation.reservationId].get('numberOfGuests')?.errors?.['min']">Invalid number of guests. Must be at least 1.</small>
+                  </div>
+              </div>
+              <div class="form-group">
+                  <label for="specialRequests">Special Requests:</label>
+                  <textarea type="text" class="form-control" formControlName="specialRequests" placeholder="Enter any dietary restrictions, special occasions, or any other preferences here."></textarea>
+              </div>
+              <button type="submit" class="btn btn-success">Update Reservation</button>
+              <button type="button" class="btn btn-secondary" (click)="cancelEdit(reservation.reservationId)">Cancel</button>
+          </form>
+
+          <button *ngIf="reservation.reservationId !== undefined && !editingStates[reservation.reservationId]" class="btn btn-primary" (click)="editReservation(reservation.reservationId)">Edit Reservation</button>
+          <button *ngIf="reservation.reservationId !== undefined && !editingStates[reservation.reservationId]" class="btn btn-danger" (click)="deleteReservation(reservation.reservationId)">Cancel Reservation</button>
+      </div>
   </div>
 </div>
 

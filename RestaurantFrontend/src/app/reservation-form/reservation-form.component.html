@@ -6,7 +6,6 @@
   <form *ngIf="!showConfirmation" [formGroup]="reservationForm" (ngSubmit)="onSubmit()">
     <div>
       <label for="reservationDate">Reservation Date:</label>
-      <!-- <input type="date" formControlName="reservationDate" [min]="minDate"> -->
       <mat-form-field appearance="fill">
         <input matInput [matDatepicker]="picker" formControlName="reservationDate" [min]="minDate" placeholder="DD-MM-YYYY">
         <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
@@ -18,13 +17,13 @@
         <div 
           *ngFor="let timeSlot of timeSlots"
           [ngClass]="{
-            'available': isTimeSlotAvailable(timeSlot),
-            'disabled': !isTimeSlotAvailable(timeSlot),
-            'selected': reservationForm.value.reservationTime === timeSlot
+            'available': isTimeSlotAvailable(timeSlot.time) && !timeSlot.disabled,
+            'disabled': !isTimeSlotAvailable(timeSlot.time) || timeSlot.disabled,
+            'selected': reservationForm.value.reservationTime === timeSlot.time
           }"
-          (click)="selectTimeSlot(timeSlot)"
+          (click)="selectTimeSlot(timeSlot.time)"
         >
-          {{ timeSlot }}
+          {{ timeSlot.time }}
         </div>
       </div>
     </div>  
@@ -112,5 +111,4 @@
   
   <app-terms-and-conditions-modal *ngIf="showTermsModal" (accepted)="termsAccepted = true; showTermsModal = false" (closed)="showTermsModal = false"></app-terms-and-conditions-modal>
   <app-reservation-success-modal *ngIf="showModal" (closeModal)="closeModal()"></app-reservation-success-modal>  
-
 </div>
