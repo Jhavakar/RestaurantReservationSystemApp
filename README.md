@@ -6,7 +6,6 @@ A web application for managing restaurant reservations, built with C# for the ba
 
 - [Installation](#installation)
 - [Usage](#usage)
-- [Contributing](#contributing)
 - [License](#license)
 
 ## Installation
@@ -80,32 +79,6 @@ A web application for managing restaurant reservations, built with C# for the ba
 2. **Using the application**:
     - Users can sign up, log in, and manage reservations.
     - Admins can view all reservations and manage users.
-
-## Contributing
-
-Guidelines on how to contribute to the project.
-
-1. **Fork the repository**.
-2. **Create a new branch**:
-
-    ```bash
-    git checkout -b feature/your-feature-name
-    ```
-
-3. **Make your changes**.
-4. **Commit your changes**:
-
-    ```bash
-    git commit -m "Add some feature"
-    ```
-
-5. **Push to the branch**:
-
-    ```bash
-    git push origin feature/your-feature-name
-    ```
-
-6. **Open a pull request**.
 
 ## License
 
